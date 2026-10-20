@@ -3,7 +3,6 @@
 Run via StudyApp.cmd. Standard library + PyYAML only (already installed). Listens on 127.0.0.1 only,
 unless started with --lan (StudyPhone.cmd): then phones on the same Wi-Fi can open it with a secret link.
 """
-import ipaddress
 import json
 import os
 import re
@@ -375,35 +374,45 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
-    def send(self, code, body, ctype="application/json"):
+    def send(self, code, body, ctype="application/json", headers=None):
         data = body if isinstance(body, bytes) else json.dumps(body).encode("utf-8")
         self.send_response(code)
+        for k, v in (headers or {}).items():
+            self.send_header(k, v)
         self.send_header("Content-Type", ctype + "; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
 
+    def link_key(self):
+        return parse_qs(self.path.partition("?")[2]).get("k", [""])[0]
+
     def host_ok(self):
         host, client = self.headers.get("Host", "").split(":")[0], self.client_address[0]
         if host in ("127.0.0.1", "localhost") and client == "127.0.0.1":
             return True
-        # LAN: only private-network clients that carry the secret key (cookie set by the /?k= link)
-        return (LAN and host == LAN_IP and ipaddress.ip_address(client).is_private
-                and secrets.compare_digest(SimpleCookie(self.headers.get("Cookie", "")).get("k", Morsel()).value or "", LAN_KEY))
+        if not LAN:
+            return False
+        # phone mode: the secret key is the guard (cookie from the link, or the link itself); any host name or address
+        cookie = SimpleCookie(self.headers.get("Cookie", "")).get("k", Morsel()).value or ""
+        ok = secrets.compare_digest(cookie, LAN_KEY) or secrets.compare_digest(self.link_key(), LAN_KEY)
+        if not ok:
+            print(f"refused {client} {self.command} {self.path.split('?')[0]} host={host} cookie={'wrong' if cookie else 'none'}", flush=True)
+        return ok
 
     def do_GET(self):
         path = self.path.split("?")[0]
-        if LAN and path == "/" and secrets.compare_digest(parse_qs(self.path.partition("?")[2]).get("k", [""])[0], LAN_KEY):
-            self.send_response(302)  # trade the link's key for a cookie, then drop it from the address bar
-            self.send_header("Set-Cookie", f"k={LAN_KEY}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict")
-            self.send_header("Location", "/")
-            self.end_headers()
-            return
         if not self.host_ok():
+            if LAN and path == "/":
+                return self.send(403, b"<meta name=viewport content='width=device-width'><body style='font:17px system-ui;padding:24px'>"
+                                 b"<h2>Open the full link</h2><p>Use the whole link shown in the StudyPhone window on the computer, "
+                                 b"including the part after <b>?k=</b>.</p>", "text/html")
             return self.send(403, {"error": "bad host"})
         if path == "/":
-            return self.send(200, UI.read_bytes(), "text/html")
+            # phone mode: the link's key becomes a cookie, so the API calls and later visits work without it
+            extra = {"Set-Cookie": f"k={LAN_KEY}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax"} if LAN and self.link_key() else {}
+            return self.send(200, UI.read_bytes(), "text/html", extra)
         if path.startswith("/assets/"):
             # rendered turntable sheets; only plain file names, only images
             name = unquote(path[len("/assets/"):])
