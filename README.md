@@ -29,7 +29,7 @@ It runs on your own computer in an app window. Your guides, PDFs and progress st
 - **Python 3.10 or newer** from [python.org/downloads](https://www.python.org/downloads/). During install, tick **"Add python.exe to PATH"**.
 - **Google Chrome or Microsoft Edge** (the app opens in an app window of either).
 - **A free Groq API key** from [console.groq.com/keys](https://console.groq.com/keys) (sign in, *Create API key*, copy the key that starts with `gsk_`).
-- Optional, for the best guides: **[Claude Code](https://claude.com/claude-code)** (see *Making great guides with Claude* below).
+- Optional, for the best guides: a coding agent, either **[Claude Code](https://claude.com/claude-code)** or **[ChatGPT Codex](https://developers.openai.com/codex)** (see *Making great guides with an AI agent* below).
 - Optional: **Git**, to clone and update. Without Git, use *Code → Download ZIP* on GitHub.
 
 ---
@@ -75,31 +75,50 @@ Closing the window is enough: the app stops by itself after a while. Opening `St
 
 ---
 
-## Making great guides with Claude (recommended)
+## Making great guides with an AI agent (recommended)
 
-Dropping a PDF into the app gives a quick, short guide for **one** PDF (about 15 flashcards and 12 questions), written by the small Groq model. For a real exam guide, let **Claude** read the whole course and write it. The difference is large:
+Dropping a PDF into the app gives a quick, short guide for **one** PDF (about 15 flashcards and 12 questions), written by the small Groq model. For a real exam guide, let a coding agent read the whole course and write it. **Claude Code** and **ChatGPT Codex** both work: the project ships the same instructions and skills for each. The difference is large:
 
 | Made by | Guide notes | Flashcards | Quiz |
 |---|---|---|---|
 | Drop a PDF in the app | ~5,000 characters | ~15 | ~12 |
-| Claude, from the whole course folder | 25,000–80,000 characters | 50–100+ | 25–100 |
+| Claude Code or Codex, from the whole course folder | 25,000–80,000 characters | 50–100+ | 25–100 |
 
-**How:** open this folder in Claude Code (`claude` in a terminal inside the folder, or the Claude desktop app's Code tab). The project ships a skill, **`.claude/skills/study-app`**, that teaches Claude the app's format, so you can just say:
+### Option A: Claude Code (Claude Pro or Max plan)
+
+1. Install: the [Claude desktop app](https://claude.ai/download) (use its **Code** tab), or the terminal version from [claude.com/claude-code](https://claude.com/claude-code).
+2. Sign in with your Claude account.
+3. Open the **STUDY folder** (desktop: pick the folder; terminal: `cd STUDY` then `claude`).
+4. Ask in plain words. Claude reads `CLAUDE.md` and loads the skills in `.claude/skills/` by itself.
+
+### Option B: ChatGPT Codex (ChatGPT Plus, Pro, Business or Edu plan)
+
+1. Install: the [Codex app](https://developers.openai.com/codex) (open a project folder there), or the terminal version: `npm install -g @openai/codex` (needs [Node.js](https://nodejs.org)).
+2. Sign in: choose **Sign in with ChatGPT** and log in with your ChatGPT account. No API key needed.
+3. Open the **STUDY folder** (app: pick the folder; terminal: `cd STUDY` then `codex`).
+4. Ask in plain words. Codex reads `AGENTS.md` and finds the skills in `.agents/skills/` by itself. To call one directly, type `$course-guide` or `$study-app`, or pick it from `/skills`.
+
+### What to ask (same for both)
 
 > Make a study guide for my Networking course from the files in `C:\Uni\Networking`, put it in the Networking chapter, the exam is on 15 December.
 
-Claude reads everything, writes the guide, flashcards and quiz, saves them in `output/`, files them into the chapter, and tells you to refresh the app (F5).
+The agent extracts every PDF (`tools/extract_pdf.py`: text, tables, and page images for scanned slides and diagrams), reads it all, writes the guide, flashcards and quiz, saves them in `output/`, files them into the chapter, and tells you to refresh the app (F5). Agents ask before running commands; allow the extractor and Python when asked.
+
+Later: *"Add lectures 9 and 10 from the same folder to my Networking guide"* keeps your progress on the existing cards.
 
 ### Recommended skill stack
 
-| Skill | What it adds | Where |
+| Job | Claude Code | ChatGPT Codex |
 |---|---|---|
-| **study-app** | The app's YAML format, chapters, exam dates, how to run and change the app | Included in this repo, loads automatically |
-| **course-catchup-guide** | Builds a from-zero guide for a whole course folder: theory → setup → tool-based theory → labs and exam | Anthropic skill (enable it in Claude if your account has it) |
-| **pdf** | Reliable text and table extraction, OCR for scanned slides | Anthropic skill |
-| **impeccable** *(only for changing the design)* | Design direction, critique and polish | [github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable) |
+| App format, chapters, exam dates, running the app | **study-app** (included) | **study-app** (included) |
+| Whole course → from-zero guide (theory → setup → applied → labs and exam) | **course-guide** (included), or Anthropic's *course-catchup-guide* if your account has it | **course-guide** (included; *course-catchup-guide* is Claude-only, this is its open replacement) |
+| PDF text, tables, scanned pages | `tools/extract_pdf.py` (included); optional Anthropic **pdf** skill | `tools/extract_pdf.py` (included); optional OpenAI **pdf** skill: type `$skill-installer pdf` in Codex |
+| Lecture recordings → text | No Anthropic skill for this: give Claude a transcript or the slides | OpenAI **transcribe** skill: `$skill-installer transcribe` (needs an OpenAI API key, billed separately) |
+| Changing the design (optional) | **impeccable**: [github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable) | **impeccable** supports Codex too (see its README) |
 
-For writing guides, pick the strongest Claude model you have. Groq is still used inside the app for the quick upload, *Write more*, chapter matching and *See in guide*.
+Pick the strongest model your plan offers for writing guides. Groq is still used inside the app for the quick upload, *Write more*, chapter matching and *See in guide*.
+
+Skill sources: OpenAI's curated skills at [github.com/openai/skills](https://github.com/openai/skills), Anthropic's at [github.com/anthropics/skills](https://github.com/anthropics/skills).
 
 ---
 
@@ -157,10 +176,12 @@ To back up your study data, copy those files and folders. To start fresh, delete
 | `app.py` | Local server (Python standard library) and JSON API on `127.0.0.1:8765` |
 | `ui.html` | The entire front end (HTML, CSS, JS, no build step) |
 | `DESIGN.md`, `PRODUCT.md` | The design system and product brief (read these before UI changes) |
-| `.claude/skills/study-app/` | The Claude skill shipped with the project |
+| `AGENTS.md`, `CLAUDE.md` | Agent instructions: Codex reads `AGENTS.md`; `CLAUDE.md` imports it for Claude Code |
+| `.agents/skills/`, `.claude/skills/` | The `study-app` and `course-guide` skills, one identical copy per agent (the tests check they match) |
+| `tools/extract_pdf.py` | PDF → Markdown text, tables and page images for agents (`.venv\Scripts\python tools\extract_pdf.py <folder> --images`) |
 | `tools/render_objects.py` | Blender script for the 10 chapter objects (`blender -b --factory-startup --python tools/render_objects.py -- assets/frames 36 360`) |
 | `tools/pack_sprites.py` | Packs the 36 rendered frames into `assets/<shape>.webp` turntables |
-| `tools/test_find_in_guide.mjs` | Tests for search ranking, math rendering and chapter objects (`node tools/test_find_in_guide.mjs`) |
+| `tools/test_find_in_guide.mjs` | Tests for search ranking, math rendering, chapter objects and skill copies (`node tools/test_find_in_guide.mjs`) |
 | `vendor/katex/` | KaTeX 0.19.0 for math (MIT) |
 | `skill_anything/` | The upstream Skill-Anything CLI (`sa`), used to turn PDFs into study packs. Its own docs: [docs/SKILL_ANYTHING.md](docs/SKILL_ANYTHING.md) |
 | `study.cmd`, `make_html.py` | Older command-line path: PDF to a standalone HTML flashcard page |

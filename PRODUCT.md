@@ -24,7 +24,7 @@ Everything for one student's courses lives locally in one place: guide, flashcar
 
 ## Operating Context
 
-Quick generation uses an OpenAI-compatible API (Groq by default) with the key in `.env`; studying works offline. Deep, exam-quality guides are written with Claude (Claude Code) and filed into the app through the bundled `study-app` skill. Data lives in `output/`, `progress.json`, `stats.json`, `classes.json`, `settings.json`, `locate_cache.json`, all git-ignored. Decks are AI-written, so answers should be spot-checked before an exam.
+Quick generation uses an OpenAI-compatible API (Groq by default) with the key in `.env`; studying works offline. Deep, exam-quality guides are written by a coding agent (Claude Code or ChatGPT Codex) and filed into the app through the bundled `course-guide` and `study-app` skills. Data lives in `output/`, `progress.json`, `stats.json`, `classes.json`, `settings.json`, `locate_cache.json`, all git-ignored. Decks are AI-written, so answers should be spot-checked before an exam.
 
 ## Capabilities and Constraints
 

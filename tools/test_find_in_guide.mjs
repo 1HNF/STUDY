@@ -48,6 +48,13 @@ assert.equal(assignShapes(kept), true); assert.notEqual(kept[0].shape, kept[1].s
 assert.equal(kept[0].shape, "gear", "the first keeps its object");
 const again = JSON.stringify(kept); assignShapes(kept); assert.equal(JSON.stringify(kept), again, "stable once assigned");
 
+// skills: Codex (.agents/skills) and Claude Code (.claude/skills) must ship the same text
+for (const s of ["study-app", "course-guide"]) {
+  const read = dir => readFileSync(new URL(`../${dir}/skills/${s}/SKILL.md`, import.meta.url), "utf8").replace(/\r\n/g, "\n");
+  assert.equal(read(".agents"), read(".claude"), `${s}: .agents and .claude copies differ`);
+  assert.match(read(".agents"), new RegExp(`^---\\nname: ${s}\\ndescription: .+\\n---`), `${s}: frontmatter needs name and description`);
+}
+
 // 2. real deck (if the app is running and has a guide): most cards should find at least one passage
 let list = null;
 try { list = await (await fetch("http://127.0.0.1:8765/api/decks")).json(); } catch { /* app not running */ }

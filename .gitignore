@@ -19,6 +19,7 @@ stats.json
 classes.json
 settings.json
 locate_cache.json
+work/
 
 # Design working files and Blender frames (regenerate with tools/render_objects.py)
 .impeccable/

@@ -1,6 +1,6 @@
 ---
 name: study-app
-description: Use when the user wants a study guide, flashcards or a quiz from course material (PDF slides, notes, a course folder), wants to file a guide into a chapter (class), set an exam date, or open, run or change this STUDY app. Knows the app's data format and how to write exam-quality guides with Claude.
+description: Use when the user wants a study guide, flashcards or a quiz from course material (PDF slides, notes, a course folder), wants to file a guide into a chapter (class), set an exam date, or open, run or change this STUDY app. Knows the app's data format and how to write exam-quality guides with Claude Code or ChatGPT Codex.
 ---
 
 # STUDY app
@@ -10,21 +10,22 @@ This folder is a local study app. `StudyApp.cmd` starts `app.py` (Python server 
 ## Two ways a guide gets made
 
 1. **Quick (inside the app):** the student drops a PDF on the window. `app.py` runs the bundled Skill-Anything CLI (`.venv\Scripts\sa.exe pdf …`) with the model in `.env` (Groq by default) and files the result into a matching chapter. Short guide, about 15 flashcards and 12 questions per PDF. Good for a single lecture.
-2. **Exam quality (you, Claude):** you read the whole course material and write the guide, flashcards and quiz yourself, then save them in the app's format (below). Much deeper: 25k to 80k characters of notes, 50 to 100 flashcards, 25 to 100 questions. Prefer this whenever the student asks for a real study guide.
+2. **Exam quality (you, the coding agent: Claude Code or Codex):** you read the whole course material and write the guide, flashcards and quiz yourself, then save them in the app's format (below). Much deeper: 25k to 80k characters of notes, 50 to 100 flashcards, 25 to 100 questions. Prefer this whenever the student asks for a real study guide.
 
 ## Recommended skill stack for exam-quality guides
 
 Use whichever of these are available in the session; the workflow still works without them.
-- `course-catchup-guide` (Anthropic skill): builds a from-zero guide for a whole course folder, ordered theory → setup → labs → exam. Use it for the notes.
-- `pdf` (Anthropic skill): extract text and tables and run OCR on scanned slides before writing, so nothing is lost.
-- this `study-app` skill: turns the result into the app's YAML, with flashcards and a quiz, and files it into a chapter.
-- `impeccable` (github.com/pbakaus/impeccable): only for changing the app's design; read `DESIGN.md` first.
-Use the strongest available Claude model for writing guides.
+- `course-guide` (bundled, both agents): reads a whole course folder and writes a from-zero guide, ordered theory → setup → applied → labs and exam. Start here for a full course. In Claude Code, Anthropic's `course-catchup-guide` does the same job if the account has it.
+- `tools/extract_pdf.py` (bundled): text, tables and page images from every PDF, so nothing is lost. Optional extras: the `pdf` skill (Anthropic for Claude Code; OpenAI's curated `pdf` for Codex, `$skill-installer pdf`).
+- `transcribe` (Codex, OpenAI curated skill, needs an OpenAI API key): lecture recordings to text.
+- this `study-app` skill: the app's YAML, flashcards and quiz, filing into a chapter.
+- `impeccable` (github.com/pbakaus/impeccable, supports both agents): only for changing the app's design; read `DESIGN.md` first.
+Use the strongest model available for writing guides.
 
 ## Workflow (exam quality)
 
 1. Ask for the course folder or files, the course name, and the exam date if there is one.
-2. Read everything (slides, syllabus, past exams, notes). For scanned PDFs, OCR first.
+2. Read everything (slides, syllabus, past exams, notes): run `.venv\Scripts\python tools\extract_pdf.py "<folder>" --images` and read its output; look at the page images of scanned or diagram pages.
 3. Write `detailed_notes` as Markdown: `#` for the guide title, `##` for parts, `###` for topics. Explain from zero, with worked examples and "check yourself" questions. Put real equations in fenced ```latex blocks (rendered with KaTeX). Inline math may use `x^{2}`, `x_n`, `e^{jθ}`; the app turns those into superscripts and subscripts. Tables use pipe Markdown.
 4. Write flashcards that each test one idea, with answers that can be checked against the notes (the "See in guide" button finds where each card is explained). Write a quiz with a mix of types.
 5. Save the YAML to `output/<id>/<id>.yaml` (`<id>`: lowercase words joined by `-`, e.g. `networking-guide`). One folder per guide.
@@ -36,7 +37,7 @@ Use the strongest available Claude model for writing guides.
 ```yaml
 title: Networking — Catch-Up Guide          # shown everywhere
 source_type: study_guide
-source_ref: Claude (from the course folder)
+source_ref: course folder (Claude Code or Codex)
 summary: One paragraph overview shown first in the Guide tab.
 detailed_notes: |                            # the main guide, Markdown
   # Networking — Catch-Up Guide
@@ -58,7 +59,7 @@ quiz_questions:
     answer: A                              # letter for multiple_choice, True/False, short text for fill_blank, model answer for comparison
     explanation: Why the answer is right.
     difficulty: medium                     # easy | medium | hard
-metadata: {generator: Claude, created: 2026-01-01}
+metadata: {generator: Claude Code, created: 2026-01-01}   # or Codex
 ```
 
 Rules: valid YAML (quote strings containing `: ` or starting with special characters, or use `|` blocks); exactly four options for multiple choice, without leading letters being required (the app adds A to D); `fill_blank` answers short enough to type.
