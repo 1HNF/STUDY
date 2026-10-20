@@ -1,0 +1,26 @@
+# Python / tooling
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Secrets: each person keeps their own key in .env (see .env.example)
+.env
+
+# Personal study data: never commit (your guides, PDFs, progress and caches)
+output/
+uploads/
+progress.json
+stats.json
+classes.json
+settings.json
+locate_cache.json
+
+# Design working files and Blender frames (regenerate with tools/render_objects.py)
+.impeccable/
+assets/frames/
+*.bak*

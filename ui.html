@@ -1,0 +1,1022 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Study</title>
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<script src="/vendor/katex/katex.min.js"></script>
+<style>
+/* World: a study journal. Each class is a chapter opened by its own rendered object.
+   Paper, ink, one electric blue. Serif for the book, sans for the controls. */
+:root{
+  --paper:#f5f5f2;--paper2:#ecece7;--paper3:#e1e1da;--card:#fff;
+  --ink:#141414;--ink2:#2c2c29;--mu:#6b6b66;--su:#9b9b94;
+  --acc:#2f4dff;--acc-hi:#4561ff;--acc-wash:#e4e9ff;
+  --ok:#1b8a4c;--ok-wash:#dff2e6;--bad:#d4392a;--bad-wash:#f9e2de;
+  --c1:#2f4dff;--c2:#a6b4ff;--c3:#dcdcd5;--grid:#e6e6e0;--axis:#c8c8c0;
+  --t1:#d9defd;--t2:#aebafe;--t3:#7a8eff;--t4:#4b67ff;--t5:#1d33d1;
+  --s:"Sitka Banner","Sitka Display",Georgia,serif;--h:"Sitka Heading","Sitka Subheading",Georgia,serif;
+  --t:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --out:cubic-bezier(.16,1,.3,1);--lift:0 1px 2px rgba(20,20,20,.05),0 22px 44px -18px rgba(20,20,20,.22);
+  color-scheme:light;
+}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:400 15.5px/1.55 var(--t);-webkit-font-smoothing:antialiased}
+::selection{background:var(--acc);color:#fff}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:6px}
+button,select,input{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+h1,h2{font-family:var(--s);font-weight:700;letter-spacing:-.02em}
+h3{font-family:var(--h);font-weight:700}
+::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-thumb{background:var(--paper3);border-radius:8px;border:3px solid var(--paper)}
+
+/* ---------- top bar ---------- */
+.mast-h{position:sticky;top:0;z-index:40;background:var(--paper);display:flex;align-items:center;gap:30px;padding:16px clamp(18px,4vw,56px)}
+.mast-h .brand{font:700 23px/1 var(--s);letter-spacing:-.01em;margin-right:4px}
+.mast-h nav{display:flex;gap:4px}
+.mast-h nav a{padding:8px 12px;border-radius:999px;color:var(--mu);font-weight:600;font-size:14.5px;transition:color .15s,background .15s}
+.mast-h nav a:hover{color:var(--ink)}
+.mast-h nav a.on{color:var(--ink);background:var(--paper2)}
+.mast-h .right{margin-left:auto;display:flex;gap:10px;align-items:center}
+/* inline search: you type right in the corner, results drop under it */
+.sx{position:relative;display:flex;align-items:center;gap:10px;background:var(--paper2);border-radius:999px;padding:0 16px;width:250px;color:var(--mu);transition:width .35s var(--out),background .2s,box-shadow .2s}
+.sx:hover{background:var(--paper3)}
+.sx:focus-within{width:min(440px,38vw);background:var(--card);box-shadow:0 0 0 1.5px var(--ink)}
+.sx input{flex:1;min-width:0;border:0;background:none;padding:10px 0;font-size:14.5px;color:var(--ink);outline:none}
+.sx input::placeholder{color:var(--mu)}.sx input::-webkit-search-cancel-button{display:none}
+.sx kbd{font:12px var(--mono);color:var(--su)}.sx:focus-within kbd{display:none}
+.sx svg,.btn svg{flex:none;width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.sres{position:absolute;top:calc(100% + 8px);right:0;width:min(580px,92vw);background:var(--card);border-radius:18px;box-shadow:0 26px 60px -20px rgba(0,0,0,.32),0 0 0 1px rgba(0,0,0,.04);padding:8px;max-height:62vh;overflow:auto;animation:rise .25s var(--out)}
+.sres[hidden]{display:none}
+main{max-width:1360px;margin:0 auto;padding:18px clamp(18px,4vw,56px) 110px}
+
+/* ---------- controls ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink);cursor:pointer;font-weight:600;font-size:15px;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s,transform .12s var(--out)}
+.btn:hover{background:var(--ink);color:var(--paper)}.btn:active{transform:scale(.97)}
+.btn.ink{background:var(--ink);color:var(--paper);box-shadow:none}.btn.ink:hover{background:#000}
+.btn.acc{background:var(--acc);color:#fff;box-shadow:none}.btn.acc:hover{background:var(--acc-hi)}
+.btn.soft{box-shadow:none;background:var(--paper2)}.btn.soft:hover{background:var(--paper3);color:var(--ink)}
+.btn.ghost{box-shadow:none;color:var(--mu)}.btn.ghost:hover{background:var(--paper2);color:var(--ink)}
+.btn.bad{box-shadow:inset 0 0 0 1.5px var(--bad);color:var(--bad)}.btn.bad:hover{background:var(--bad);color:#fff}
+.btn.sm{padding:7px 14px;font-size:13.5px}.btn.lg{padding:15px 28px;font-size:16px}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn kbd{font:12px var(--mono);opacity:.6}
+select{background:var(--paper2);border:0;border-radius:999px;padding:10px 16px;cursor:pointer;font-size:14.5px;font-weight:600}
+input[type=text]{width:100%;background:var(--card);border:0;border-radius:14px;padding:15px 18px;font-size:17px;box-shadow:inset 0 0 0 1.5px var(--paper3)}
+input[type=text]:focus{outline:none;box-shadow:inset 0 0 0 2px var(--acc)}
+.pill{display:inline-block;padding:3px 11px;border-radius:999px;background:var(--paper2);font-size:13px;font-weight:600;white-space:nowrap}
+.pill.hot{background:var(--bad-wash);color:var(--bad)}.pill.soon{background:var(--acc-wash);color:var(--acc)}
+.kick{color:var(--acc);font-weight:700;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.lede{color:var(--ink2);font:400 21px/1.5 var(--h);max-width:34ch}
+.muted{color:var(--mu)}
+.crumb{color:var(--mu);font-size:14px;font-weight:600;margin:6px 0 14px}.crumb a:hover{color:var(--ink)}
+h2.sec{font-size:clamp(34px,3.4vw,46px);line-height:1;margin:84px 0 22px}
+.sechead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:84px 0 22px}
+.sechead h2{font-size:clamp(34px,3.4vw,46px);line-height:1}
+
+/* ---------- turntable (Blender sprite, 36 frames, 6x6) ---------- */
+.tt{width:var(--sz);height:var(--sz);background-size:600% 600%;background-repeat:no-repeat;touch-action:pan-y;cursor:grab;user-select:none}
+.tt:active{cursor:grabbing}
+.tt.thumb{cursor:inherit}
+.tt.missing{background:none}
+
+/* ---------- home: chapter spread ---------- */
+.spread{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,520px) 240px;gap:36px;align-items:start;min-height:560px;padding-top:26px}
+.spread h1,.opener h1{font-size:clamp(64px,8.2vw,124px);line-height:.9;margin:16px 0 24px;text-wrap:balance;hyphens:manual}
+h1.l{font-size:clamp(50px,5.8vw,90px)!important}h1.xl{font-size:clamp(42px,4.6vw,70px)!important}
+.facts{display:flex;gap:42px;margin-top:34px;flex-wrap:wrap}
+.facts div{font:700 48px/1 var(--s)}.facts small{display:block;font:500 13px var(--t);color:var(--mu);margin-top:9px}
+.facts .x{cursor:pointer}.facts .x:hover small{color:var(--acc)}
+.go{margin-top:36px;display:flex;gap:10px;flex-wrap:wrap}
+.art{position:relative;display:grid;place-items:center}
+.art .tt{filter:drop-shadow(0 38px 34px rgba(20,20,20,.18))}
+.art .cap{color:var(--su);font:italic 13px var(--h);margin-top:-6px}
+.marg{padding-top:12px;font-size:14px;color:var(--mu)}
+.marg .blk{padding-bottom:26px}
+.marg b{display:block;font:700 42px/1 var(--s);color:var(--ink);margin:6px 0 6px}
+.marg b.hot{color:var(--bad)}
+.marg .link{border:0;background:none;padding:0;color:var(--mu);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.marg .link:hover{color:var(--acc)}
+.cap .link{border:0;background:none;padding:0 0 0 6px;color:var(--su);font:italic 13px var(--h);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.cap .link:hover{color:var(--acc)}
+.dots{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;max-width:220px}.dots i{width:12px;height:12px;border-radius:50%;background:var(--paper3)}.dots i.on{background:var(--acc)}
+.dots.goal i{width:9px;height:9px}
+.swap>*{animation:rise .55s var(--out) both}.swap>*:nth-child(2){animation-delay:.05s}.swap>*:nth-child(3){animation-delay:.1s}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.art.swap .tt{animation:pop .7s var(--out) both}
+@keyframes pop{from{opacity:0;transform:scale(.92) rotate(-4deg)}}
+/* chapter tabs: the book's edge */
+/* chapter tabs: a wrapping index of every chapter, never clipped */
+.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:44px}
+.tab{display:grid;grid-template-columns:58px minmax(0,1fr);gap:2px 14px;align-items:center;text-align:left;border:0;cursor:pointer;background:var(--paper2);border-radius:18px;padding:14px 16px 16px;transition:background .2s,transform .3s var(--out),color .2s,box-shadow .2s}
+.tab:hover{background:var(--paper3);transform:translateY(-3px)}
+.tab.on{background:var(--ink);color:var(--paper);box-shadow:0 18px 34px -18px rgba(20,20,20,.6)}
+.tab .tt{grid-row:span 2}
+.tab small{display:block;color:var(--mu);font-size:12.5px;font-weight:600}.tab.on small{color:var(--su)}
+.tab b{font:700 19px/1.15 var(--s);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tab em{font-style:normal;color:var(--mu);font-size:13px}.tab.on em{color:var(--su)}
+.tab .bar{grid-column:1/-1;height:3px;border-radius:2px;background:rgba(0,0,0,.09);overflow:hidden;margin-top:12px}.tab.on .bar{background:rgba(255,255,255,.16)}
+.tab .bar i{display:block;height:100%;background:var(--acc);border-radius:2px;min-width:3px}
+.tab.add{grid-template-columns:1fr;place-items:center;align-content:center;min-height:96px;color:var(--mu);background:none;box-shadow:inset 0 0 0 1.5px var(--paper3);font-weight:600}
+.tab.add:hover{color:var(--ink);background:var(--paper2)}
+
+/* ---------- rows ---------- */
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:28px;align-items:center;padding:20px 18px;margin:0 -18px;border-radius:16px;cursor:pointer;transition:background .15s}
+.row:hover,.row:focus-visible{background:var(--paper2)}
+.row h3{font-size:23px;line-height:1.15}
+.row .meta{color:var(--mu);font-size:14px;margin-top:5px}
+.row .act{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+@media (hover:hover){.row .act .ghost{opacity:0}.row:hover .act .ghost,.row:focus-within .act .ghost{opacity:1}}
+.mast{display:flex;flex-direction:column;gap:9px;font-size:13.5px;color:var(--mu)}
+.stack{display:flex;gap:2px;height:6px}.stack b{display:block;height:100%;border-radius:3px;min-width:0;transform-origin:left;animation:grow .8s var(--out) both}
+.stack b.k{background:var(--c1)}.stack b.l{background:var(--c2)}.stack b.n{background:var(--c3)}
+@keyframes grow{from{transform:scaleX(0)}}
+.legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--mu);font-size:13.5px;margin-bottom:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.empty{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:40px;align-items:center;min-height:62vh}
+.empty h1{font-size:clamp(56px,7vw,104px);line-height:.9;margin:14px 0 20px}
+
+/* ---------- chapter page ---------- */
+.opener{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:40px;align-items:center;min-height:470px}
+.examrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}
+
+/* ---------- figures + charts ---------- */
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filters .lab{color:var(--mu);font-size:14px}
+.seg{display:inline-flex;background:var(--paper2);border-radius:999px;padding:4px;gap:2px}
+.seg a{padding:7px 15px;border-radius:999px;color:var(--mu);font-weight:600;font-size:14px}
+.seg a.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;margin:28px 0 8px}
+.fig .v{font:700 64px/1 var(--s);letter-spacing:-.02em}
+.fig .l{font-weight:600;margin-top:8px}.fig .s{color:var(--mu);font-size:13.5px;margin-top:2px}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:44px}
+.card{min-width:0}.card .ch{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.card h3{font-size:24px}.card .sub{color:var(--mu);font-size:14px;margin:2px 0 12px}
+.card .tbl{display:none;max-height:260px;overflow:auto;font:13px var(--mono)}
+.card.show-table .tbl{display:block}.card.show-table svg.plot{display:none}
+.tbl table{border-collapse:collapse;width:100%}.tbl th{text-align:left;color:var(--mu);font-weight:500}
+.tbl th,.tbl td{padding:5px 12px 5px 0}.tbl td:first-child,.tbl th:first-child{white-space:nowrap}
+svg.plot{display:block;width:100%;height:auto;overflow:visible}
+svg.plot text{fill:var(--su);font:12px var(--mono)}
+svg.plot .grid{stroke:var(--grid);stroke-width:1}svg.plot .axis{stroke:var(--axis);stroke-width:1}
+svg.plot .hit:hover+.xh,svg.plot .hit:focus+.xh{opacity:1}svg.plot .hit:focus{outline:none}
+svg.plot .lbl-end{fill:var(--ink);font:700 13px var(--mono)}
+svg.plot .bar{fill:var(--c1);transition:opacity .1s;pointer-events:none}svg.plot .hit{fill:transparent}
+svg.plot .hit:hover+.bar,svg.plot .hit:focus+.bar{opacity:.6}
+.nodata{display:grid;place-items:center;min-height:180px;color:var(--mu);text-align:center;padding:0 24px;background:var(--paper2);border-radius:18px;font:italic 17px var(--h)}
+#tip{position:fixed;z-index:95;pointer-events:none;background:var(--ink);color:var(--paper);border-radius:10px;padding:9px 13px;font-size:13.5px;line-height:1.45;display:none;max-width:290px}
+#tip b{display:block;font:700 18px var(--h)}#tip span{opacity:.72}
+.level{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-top:28px}
+.level .lv{font:700 96px/.85 var(--s)}
+.level .xp{flex:1;min-width:260px}.level .xp .bar{height:8px;border-radius:4px;background:var(--paper3);overflow:hidden;margin:10px 0 8px}
+.level .xp .bar i{display:block;height:100%;background:var(--acc);border-radius:4px;transform-origin:left;animation:grow 1s var(--out) both}
+table.chap{width:100%;border-collapse:collapse;margin-top:6px}
+table.chap th{text-align:left;color:var(--mu);font-size:13px;font-weight:600;padding:0 14px 10px 0}
+table.chap td{padding:14px 14px 14px 0;vertical-align:middle;font-variant-numeric:tabular-nums}
+table.chap tr+tr td{box-shadow:inset 0 1px 0 var(--paper3)}
+table.chap td b{font:700 19px var(--s)}
+
+/* ---------- collection ---------- */
+.tiers{display:flex;gap:18px;flex-wrap:wrap;color:var(--mu);font-size:13.5px;margin:16px 0 34px}
+.tiers i{display:inline-block;width:11px;height:14px;border-radius:3px;margin-right:7px;vertical-align:-2px}
+.coll{margin-bottom:52px}
+.coll .ch{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.coll h3{font-size:28px}.coll .cnt{margin-left:auto;color:var(--mu)}
+.grid{display:flex;flex-wrap:wrap;gap:6px}
+.tile{width:30px;height:40px;border-radius:5px;background:var(--tier,transparent);box-shadow:inset 0 0 0 1.5px var(--paper3);cursor:pointer;transition:transform .2s var(--out)}
+.tile.s{box-shadow:none}
+.tile:hover,.tile:focus-visible{transform:translateY(-4px) scale(1.1)}
+
+/* ---------- deck page ---------- */
+.dhead{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.dhead h1{font-size:clamp(44px,5.4vw,80px);line-height:.95;margin:6px 0 0;max-width:20ch}
+.utabs{display:flex;gap:30px;margin:34px 0 0;box-shadow:inset 0 -1.5px 0 var(--paper3)}
+.utabs a{padding:0 0 14px;font-weight:600;color:var(--mu);font-size:15.5px;position:relative}
+.utabs a span{color:var(--su);font-weight:500;margin-left:6px}
+.utabs a.on{color:var(--ink)}.utabs a.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5px;background:var(--ink);border-radius:2px}
+.stage{margin-top:40px}
+/* guide reader */
+.reader{display:grid;grid-template-columns:230px minmax(0,720px);gap:60px}
+.toc{position:sticky;top:90px;align-self:start;max-height:calc(100vh - 120px);overflow:auto;font-size:13.5px}
+.toc a{display:block;padding:5px 0 5px 12px;color:var(--mu);border-radius:6px;line-height:1.35}
+.toc a.h3{padding-left:24px;font-size:13px}
+.toc a:hover{color:var(--ink)}.toc a.on{color:var(--acc);font-weight:600}
+.toc .lab{font-weight:700;color:var(--ink);margin:0 0 8px 12px}
+article{font-size:17.5px;line-height:1.75;color:var(--ink2)}
+article section{scroll-margin-top:96px}article section+section{margin-top:64px}
+article h2{font-size:46px;line-height:1;color:var(--ink);margin:0 0 22px;scroll-margin-top:96px}
+article h3,article h4,article h5{font-family:var(--h);color:var(--ink);line-height:1.2;margin:40px 0 12px;scroll-margin-top:96px}
+.toc a.on{box-shadow:inset 2px 0 0 var(--acc);border-radius:0}
+article h3{font-size:28px}article h4{font-size:22px}article h5{font-size:18px}
+article p{margin:0 0 18px}article ul,article ol{margin:0 0 20px;padding-left:24px}article li{margin:6px 0}
+article strong{color:var(--ink)}
+article code{background:var(--paper2);border-radius:5px;padding:1px 6px;font:14.5px var(--mono)}
+article pre{background:var(--ink);color:#eaeae4;border-radius:14px;padding:18px 20px;overflow:auto;margin:0 0 22px;font-size:14px;line-height:1.6}article pre code{background:none;padding:0;color:inherit}
+article .scroll{overflow-x:auto;margin:0 0 24px}
+article table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.5}
+article th{text-align:left;font-weight:700;color:var(--ink);padding:10px 14px;box-shadow:inset 0 -2px 0 var(--ink)}
+article td{padding:10px 14px;box-shadow:inset 0 -1px 0 var(--paper3)}
+article dt{font:700 18px var(--h);color:var(--ink);margin-top:20px}article dd{margin:4px 0 0;color:var(--mu)}
+.hl{color:var(--acc);font-weight:600}
+/* math */
+.mathblock{margin:4px 0 24px;padding:6px 0;overflow-x:auto;overflow-y:hidden}
+.mathblock .katex-display{margin:.4em 0}
+.katex{font-size:1.07em}
+sup,sub{font-size:.72em;line-height:0}
+/* flashcards */
+.desk{max-width:760px;margin:0 auto}
+.prog{display:flex;align-items:center;gap:14px;color:var(--mu);font-size:13.5px;margin-bottom:22px}
+.prog .line{flex:1;height:3px;border-radius:2px;background:var(--paper3);overflow:hidden}.prog .line i{display:block;height:100%;background:var(--acc);transition:width .4s var(--out)}
+.fc{perspective:2000px;cursor:pointer;outline:none}
+.fc-in{display:grid;transform-style:preserve-3d;transition:transform .6s var(--out)}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border-radius:22px;box-shadow:var(--lift);min-height:420px;display:flex;flex-direction:column;padding:22px 28px 22px}
+.fc:focus-visible .face{box-shadow:var(--lift),0 0 0 3px var(--acc)}
+.face.back{transform:rotateY(180deg)}
+.face .top{display:flex;justify-content:space-between;color:var(--su);font-size:13px;font-weight:600}
+.face .body{flex:1;display:grid;place-items:center;text-align:center;padding:24px 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.face.front .body{font:700 clamp(26px,3vw,38px)/1.2 var(--h);color:var(--ink)}
+.face.back .body{font:400 clamp(19px,2vw,23px)/1.55 var(--t);color:var(--ink2)}
+.face .foot{display:flex;justify-content:space-between;align-items:center;color:var(--su);font-size:13px;font-weight:600}
+.face .foot .tier{display:flex;align-items:center;gap:8px}.face .foot .tier i{width:10px;height:13px;border-radius:3px;background:var(--tier,var(--paper3))}
+.face.back .top b{color:var(--acc)}
+.ctl{display:flex;justify-content:center;gap:12px;margin-top:28px;flex-wrap:wrap}
+/* quiz */
+.qwrap{max-width:820px;margin:0 auto}
+.q{font:700 clamp(26px,2.9vw,36px)/1.22 var(--h);white-space:pre-wrap;margin-bottom:28px}
+.opt{display:flex;gap:16px;align-items:flex-start;width:100%;text-align:left;margin:0 0 10px;padding:16px 18px;border:0;border-radius:16px;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer;font-size:16.5px;transition:background .15s,transform .15s var(--out),box-shadow .15s}
+.opt:hover:not([disabled]){transform:translateX(4px);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.opt .key{flex:none;width:30px;height:30px;border-radius:9px;background:var(--paper2);display:grid;place-items:center;font:700 14px var(--t);color:var(--mu)}
+.opt[disabled]{cursor:default;color:var(--ink)}
+.opt.right{background:var(--ok-wash);box-shadow:inset 0 0 0 1.5px var(--ok)}.opt.right .key{background:var(--ok);color:#fff}
+.opt.wrong{background:var(--bad-wash);box-shadow:inset 0 0 0 1.5px var(--bad);animation:nudge .35s}.opt.wrong .key{background:var(--bad);color:#fff}
+@keyframes nudge{25%,75%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+.explain{margin-top:18px;padding:20px 24px;background:var(--paper2);border-radius:16px;white-space:pre-wrap;line-height:1.65;animation:rise .4s var(--out)}
+.explain.ok{background:var(--ok-wash)}.explain.no{background:var(--bad-wash)}
+/* "See in guide": passages that match a flashcard, marked like a highlighter pen */
+.found{background:#fff0a1;box-shadow:0 0 0 7px #fff0a1;border-radius:3px;animation:hlin 1.1s var(--out)}
+tr.found{box-shadow:none}tr.found td{background:#fff0a1}
+.found.cur{background:#ffe566;box-shadow:0 0 0 7px #ffe566}tr.found.cur td{background:#ffe566}
+article mark.w{background:none;color:inherit;font-weight:700;box-shadow:inset 0 -.38em 0 #ffd84a}
+@keyframes hlin{from{background:transparent;box-shadow:0 0 0 7px transparent}}
+.findbar{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:55;display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--paper);border-radius:999px;padding:7px 7px 7px 20px;box-shadow:0 20px 50px -16px rgba(0,0,0,.5);animation:barin .4s var(--out);max-width:calc(100vw - 24px)}
+@keyframes barin{from{opacity:0;transform:translate(-50%,16px)}}
+.findbar span{font-weight:600;font-size:14px;margin-right:8px;white-space:nowrap}
+.findbar i{display:inline-block;width:10px;height:10px;border-radius:2px;background:#ffe566;margin-right:9px}
+.findbar button{border:0;border-radius:999px;background:rgba(255,255,255,.1);color:var(--paper);padding:8px 14px;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.findbar button:hover{background:rgba(255,255,255,.2)}.findbar button.x{background:none;padding:8px 11px}
+.findbar i.spin{background:none;border:2px solid #ffe566;border-right-color:transparent;border-radius:50%;width:12px;height:12px;vertical-align:-1px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.explain b{font:700 17px var(--h)}
+.qnav{display:flex;justify-content:space-between;align-items:center;margin-top:26px;gap:12px}
+/* results */
+.result{display:grid;grid-template-columns:auto 1fr;gap:56px;align-items:center;padding:30px 0;animation:rise .6s var(--out)}
+.result .big{font:700 clamp(120px,15vw,200px)/.8 var(--s);letter-spacing:-.04em}
+.result .big small{font-size:.3em;color:var(--mu);margin-left:8px;letter-spacing:0}
+.result h2{font-size:clamp(36px,4vw,54px);line-height:1}
+.result p{color:var(--ink2);font:400 19px/1.5 var(--h);margin:14px 0 26px;max-width:40ch}
+.result .won{display:flex;gap:6px;margin:-8px 0 26px;flex-wrap:wrap}
+.result .won .tile{animation:rise .5s var(--out) both;animation-delay:calc(var(--i)*45ms)}
+
+/* ---------- search, job, overlays ---------- */
+.ph{display:flex;gap:16px;align-items:baseline;padding:12px 16px;border-radius:12px;cursor:pointer}
+.ph.sel{background:var(--paper2)}
+.ph .k{flex:none;width:82px;font-size:12.5px;font-weight:700;color:var(--su)}
+.ph .t{min-width:0}.ph .t div{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ph .t small{color:var(--mu);font-size:13px}
+.ph mark{background:var(--acc-wash);color:var(--acc);border-radius:3px;padding:0 2px}
+.palempty{padding:14px 16px;color:var(--mu);font:italic 15px var(--h)}
+#jobbox{position:fixed;right:22px;bottom:22px;width:300px;z-index:60}
+.job{background:var(--card);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:0 24px 60px -18px rgba(0,0,0,.3);animation:rise .45s var(--out)}
+.job b{font:700 19px var(--h)}.job small{color:var(--mu);font-size:13.5px;word-break:break-word}
+.job.ok b{color:var(--ok)}.job.err b{color:var(--bad)}
+.indet{height:3px;border-radius:2px;background:var(--paper3);overflow:hidden}.indet i{display:block;height:100%;width:35%;background:var(--acc);animation:slide 1.4s infinite ease-in-out}
+@keyframes slide{0%{margin-left:-35%}100%{margin-left:100%}}
+#ov{position:fixed;inset:0;background:rgba(245,245,242,.88);display:none;align-items:center;justify-content:center;z-index:70;pointer-events:none}
+#ov.on{display:flex}#ov div{font:700 54px/1 var(--s);padding:60px 80px;border-radius:30px;box-shadow:inset 0 0 0 3px var(--acc);color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;z-index:96;max-width:90vw;font-weight:600;animation:rise .3s var(--out)}
+.toast.bad{background:var(--bad)}
+#lost{position:sticky;top:0;z-index:99;background:var(--bad);color:#fff;padding:11px 16px;text-align:center;font-weight:600}
+#mtabs{display:none}
+
+::view-transition-old(root){animation:vt-out .18s ease-in both}
+::view-transition-new(root){animation:vt-in .32s var(--out) both}
+@keyframes vt-out{to{opacity:0}}@keyframes vt-in{from{opacity:0}}
+
+@media (max-width:1180px){.spread{grid-template-columns:minmax(0,1fr) minmax(280px,420px)}.marg{grid-column:1/-1;display:flex;gap:44px;flex-wrap:wrap;padding-top:0}.charts{grid-template-columns:1fr}.reader{grid-template-columns:1fr}.toc{display:none}}
+@media (max-width:820px){
+  .mast-h{gap:12px;padding:12px 16px}.mast-h nav{display:none}.sx{width:auto;flex:1}.sx:focus-within{width:auto}.sx kbd,.newg span{display:none}.mast-h .right{flex:1}
+  main{padding:8px 16px 120px}
+  .spread,.opener,.empty{grid-template-columns:1fr;min-height:0}.art{order:-1}.art .tt{--sz:280px!important}
+  .figs{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr;gap:14px}.row .act{justify-content:flex-start}
+  .result{grid-template-columns:1fr;gap:20px}
+  #mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--paper);box-shadow:0 -1px 0 var(--paper3);padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:4px}
+  #mtabs a{flex:1;text-align:center;padding:10px 2px;border-radius:999px;color:var(--mu);font-weight:600;font-size:13.5px}#mtabs a.on{background:var(--paper2);color:var(--ink)}
+  #jobbox{left:12px;right:12px;width:auto;bottom:76px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
+  .fc-in{transition:none}.fc.flip .face.front{opacity:0}.fc .face.back{transform:none;opacity:0}.fc.flip .face.back{opacity:1}
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+}
+</style>
+
+<header class="mast-h" id="top"></header>
+<main id="main"></main>
+<nav id="mtabs"></nav>
+<div id="jobbox"></div>
+<div id="ov"><div>Drop the PDF to start a new guide</div></div>
+<input type="file" id="fi" accept=".pdf" hidden>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const H={"X-App":"1"}, enc=encodeURIComponent, DAY=864e5, INT=[0,1,3,7,14,30];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clean=s=>String(s).replace(/\*\*/g,"");
+const fmt=s=>esc(clean(s)).replace(/`([^`]+)`/g,'<span class="hl">$1</span>');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const ls={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+const still=matchMedia("(prefers-reduced-motion: reduce)");
+const plural=(n,w)=>n+" "+w+(n==1?"":"s");
+const hsz=n=>String(n).length>22?"xl":String(n).length>12?"l":"";  // long chapter names get a smaller headline, never a mid-word break
+
+function lost(){if(!$("#lost"))document.body.insertAdjacentHTML("afterbegin",'<div id="lost">Lost connection to the app. Close this window and double-click StudyApp.cmd again. Your guides and progress are saved.</div>')}
+async function api(p,o={}){let r;try{r=await fetch(p,{...o,headers:{...H,...(o.headers||{})}})}catch(e){lost();throw e}
+  const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j}
+setInterval(()=>fetch("/api/ping").then(()=>{const l=$("#lost");l&&l.remove()}).catch(lost),5000);
+function note(msg,bad){const t=document.createElement("div");t.className="toast"+(bad?" bad":"");t.textContent=msg;document.body.append(t);setTimeout(()=>t.remove(),4200)}
+
+/* ---------- state ---------- */
+let S={decks:[],progress:{},classes:{classes:[],assign:{}},stats:{quiz:{},reviews:{},missed:{}},settings:{goal:20}}, cur={view:"",a:"",tab:"",q:new URLSearchParams()}, quizFrom={};
+let range=+ls.get("range")||14;
+async function refresh(){const j=await api("/api/decks");S={decks:j.decks,progress:j.progress,classes:j.classes,stats:{missed:{},...j.stats},settings:j.settings};
+  if(assignShapes(S.classes.classes))saveClasses().catch(()=>{})}
+function stat(kind,id,body){
+  if(kind=="review")(S.stats.reviews[id]=S.stats.reviews[id]||[]).push(Date.now());
+  else(S.stats.quiz[id]=S.stats.quiz[id]||[]).push({t:Date.now(),score:body.score,total:body.total});
+  api("/api/stat/"+kind+"/"+enc(id),{method:"POST",body:JSON.stringify(body||{})}).catch(()=>{});
+}
+const saveClasses=()=>api("/api/classes",{method:"POST",body:JSON.stringify(S.classes)});
+const deckById=id=>S.decks.find(d=>d.id==id);
+const classOf=id=>S.classes.classes.find(c=>c.id==S.classes.assign[id]);
+const decksOf=cid=>cid=="_loose"?S.decks.filter(d=>!classOf(d.id)):S.decks.filter(d=>S.classes.assign[d.id]==cid);
+const chapters=()=>{const C=S.classes.classes.map(c=>({id:c.id,name:c.name,exam:c.exam,c}));if(S.decks.some(d=>!classOf(d.id)))C.push({id:"_loose",name:"Unfiled guides",loose:true});return C};
+
+/* ---------- each chapter's rendered object ---------- */
+const SHAPES=["net","logic","wave","shield","bars","helix","gear","prism","orbit","knot"];
+function prefShape(name){
+  const n=String(name).toLowerCase();
+  return /secur|crypt|privacy|attack/.test(n)?"shield":/logic|circuit|digital|electron|gate|vhdl/.test(n)?"logic"
+    :/network|internet|tcp|router|protocol/.test(n)?"net":/communic|signal|fourier|wave|radio/.test(n)?"wave"
+    :/stat|prob|data|econ/.test(n)?"bars":/bio|chem|gene|dna|cell/.test(n)?"helix":/mechan|machine|engine|robot|thermo/.test(n)?"gear"
+    :/optic|light|physic|laser/.test(n)?"prism":/astro|space|aviat|flight|pilot|ppl|navig|meteo/.test(n)?"orbit"
+    :/math|algebra|topolog|calcul|discrete|geometr/.test(n)?"knot":null;
+}
+// Every class keeps its own object (classes.json `shape`): unique while there are 10 or fewer classes.
+function assignShapes(C,rnd=Math.random){
+  let changed=false;const taken=new Set();
+  for(const c of C){
+    if(!(SHAPES.includes(c.shape)&&(!taken.has(c.shape)||taken.size>=SHAPES.length))){
+      const free=SHAPES.filter(s=>!taken.has(s)),pref=prefShape(c.name);
+      c.shape=free.length?(free.includes(pref)?pref:free[rnd()*free.length|0]):SHAPES[rnd()*SHAPES.length|0];changed=true}
+    taken.add(c.shape)}
+  return changed;
+}
+function rerollShape(c,rnd=Math.random){
+  const others=new Set(S.classes.classes.filter(x=>x!==c).map(x=>x.shape));
+  const pool=SHAPES.filter(s=>s!==c.shape&&(!others.has(s)||others.size>=SHAPES.length));
+  if(pool.length)c.shape=pool[rnd()*pool.length|0];
+}
+const looseShape=()=>SHAPES.find(s=>!S.classes.classes.some(c=>c.shape==s))||"net";
+const chShape=ch=>ch.loose?looseShape():(ch.c&&ch.c.shape)||prefShape(ch.name)||SHAPES[0];
+const tt=(shape,size,{auto=false,frame=2,thumb=false}={})=>`<div class="tt${thumb?" thumb":""}" data-shape="${shape}" data-frame="${frame}" ${auto?'data-auto="1"':""} style="--sz:${size}px;background-image:url(/assets/${shape}.webp)" role="img" aria-label="${thumb?"":"3D model, drag to turn it"}"></div>`;
+const ttOk={};
+function setFrame(el,f){f=((f%36)+36)%36;el.dataset.frame=f;el.style.backgroundPosition=`${(f%6)*20}% ${Math.floor(f/6)*20}%`}
+function initTT(root=document){
+  $$(".tt",root).forEach(el=>{
+    const shape=el.dataset.shape;setFrame(el,+el.dataset.frame);
+    if(!(shape in ttOk)){ttOk[shape]=null;const im=new Image();im.onload=()=>ttOk[shape]=true;im.onerror=()=>{ttOk[shape]=false;$$(`.tt[data-shape="${shape}"]`).forEach(x=>x.classList.add("missing"))};im.src=`/assets/${shape}.webp`}
+    else if(ttOk[shape]===false)el.classList.add("missing");
+    if(el.classList.contains("thumb")||el.dataset.bound)return;el.dataset.bound=1;
+    let drag=null,idle=0;
+    el.addEventListener("pointerdown",e=>{drag={x:e.clientX,f:+el.dataset.frame};el.setPointerCapture(e.pointerId)});
+    el.addEventListener("pointermove",e=>{if(drag)setFrame(el,drag.f-Math.round((e.clientX-drag.x)/9))});
+    const up=()=>{drag=null;idle=performance.now()};el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);
+    if(el.dataset.auto&&!still.matches){let last=0;
+      const loop=t=>{if(!el.isConnected)return;if(!drag&&t-idle>1600&&t-last>95&&!document.hidden){setFrame(el,+el.dataset.frame+1);last=t}requestAnimationFrame(loop)};
+      requestAnimationFrame(loop)}
+  });
+}
+
+/* ---------- time, streak, XP ---------- */
+const day0=t=>{const d=new Date(t);d.setHours(0,0,0,0);return +d};
+const fmtDay=t=>new Date(t).toLocaleDateString(undefined,{day:"numeric",month:"short"});
+const fmtDayLong=t=>new Date(t).toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+const daysTo=s=>Math.round((new Date(s+"T00:00:00")-day0(Date.now()))/DAY);
+function activeDays(){const s=new Set();Object.values(S.stats.reviews).forEach(a=>a.forEach(t=>s.add(day0(t))));Object.values(S.stats.quiz).forEach(a=>a.forEach(x=>s.add(day0(x.t))));return s}
+function streakInfo(){
+  const set=activeDays(),today=day0(Date.now());let d=set.has(today)?today:today-DAY,n=0;while(set.has(d)){n++;d-=DAY}
+  return {n,doneToday:set.has(today),last7:Array.from({length:7},(_,i)=>{const t=today-(6-i)*DAY;return {t,on:set.has(t)}})};
+}
+function reviewedToday(){const t=day0(Date.now());let n=0;Object.values(S.stats.reviews).forEach(a=>a.forEach(x=>{if(x>=t)n++}));return n}
+const XPL=500;
+function xpInfo(){let xp=0;Object.values(S.stats.reviews).forEach(a=>xp+=a.length*10);Object.values(S.stats.quiz).forEach(a=>a.forEach(x=>xp+=x.score*20));
+  return {xp,level:Math.floor(xp/XPL)+1,into:xp%XPL}}
+const TIERS=[["Seen","var(--t1)"],["Learning","var(--t2)"],["Familiar","var(--t3)"],["Known","var(--t4)"],["Mastered","var(--t5)"]];
+const tierOf=p=>p?TIERS[Math.min(p.box,4)]:null;
+
+/* ---------- top bar ---------- */
+const ic={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'};
+function shell(){
+  const v=cur.view, inCh=v=="deck"&&!!classOf(cur.a);
+  const on=k=>({ch:v==""||v=="class"||inCh,lib:v=="library"||(v=="deck"&&!inCh),col:v=="collection",pro:v=="progress"})[k]?"on":"";
+  $("#top").innerHTML=`<a class="brand" href="#/">Study</a>
+    <nav><a href="#/" class="${on("ch")}">Chapters</a><a href="#/library" class="${on("lib")}">Library</a><a href="#/collection" class="${on("col")}">Collection</a><a href="#/progress" class="${on("pro")}">Progress</a></nav>
+    <div class="right"><label class="sx">${ic.search}<input type="search" id="pq" placeholder="Search everything" autocomplete="off" spellcheck="false" aria-label="Search guides, flashcards, questions and terms"><kbd>Ctrl K</kbd><div class="sres" id="pres" hidden></div></label><button class="btn ink sm newg" id="ng">${ic.plus}<span>New study guide</span></button></div>`;
+  $("#mtabs").innerHTML=`<a href="#/" class="${on("ch")}">Chapters</a><a href="#/library" class="${on("lib")}">Library</a><a href="#/collection" class="${on("col")}">Collection</a><a href="#/progress" class="${on("pro")}">Progress</a>`;
+  $("#ng").onclick=()=>$("#fi").click();bindSearch();
+}
+$("#fi").onchange=e=>{const f=e.target.files[0];e.target.value="";f&&upload(f)};
+
+/* ---------- inline search (top-right corner) ---------- */
+let palSel=0,palHits=[],palT;
+const KIND={guide:"Guide",term:"Glossary",card:"Flashcard",quiz:"Question",note:"Notes"};
+function palHref(h){const b="#/deck/"+enc(h.deck);
+  return h.kind=="card"?b+"/cards?i="+h.i:h.kind=="quiz"?b+"/quiz?i="+h.i:h.kind=="term"?b+"/guide?sec=g-glossary":h.kind=="note"?b+"/guide?sec=g-notes":b+"/guide"}
+function closePal(){const i=$("#pq");if(i){i.value="";i.blur()}const r=$("#pres");if(r)r.hidden=true;palHits=[]}
+function goHit(h){closePal();location.hash=palHref(h)}
+function drawPal(q){
+  const rx=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"),r=$("#pres");r.hidden=false;
+  r.innerHTML=palHits.length?palHits.map((h,i)=>`<div class="ph ${i==palSel?"sel":""}" data-i="${i}"><span class="k">${KIND[h.kind]}</span><span class="t"><div>${esc(h.text).replace(rx,"<mark>$1</mark>")}</div><small>${esc(h.title)}</small></span></div>`).join(""):`<div class="palempty">Nothing matches “${esc(q)}”.</div>`;
+  const s=$(".ph.sel",r);s&&s.scrollIntoView({block:"nearest"});
+}
+function bindSearch(){
+  const i=$("#pq"),r=$("#pres");
+  i.addEventListener("input",()=>{clearTimeout(palT);const q=i.value.trim();
+    if(q.length<2){palHits=[];r.hidden=true;return}
+    palT=setTimeout(async()=>{try{palHits=(await api("/api/search?q="+enc(q))).hits;palSel=0;if(i.value.trim()==q)drawPal(q)}catch{}},140)});
+  i.addEventListener("keydown",e=>{
+    if(e.key=="ArrowDown"||e.key=="ArrowUp"){e.preventDefault();if(palHits.length){palSel=(palSel+(e.key=="ArrowDown"?1:-1)+palHits.length)%palHits.length;drawPal(i.value.trim())}}
+    else if(e.key=="Enter"&&palHits[palSel]){e.preventDefault();goHit(palHits[palSel])}
+    else if(e.key=="Escape"){closePal()}
+  });
+  r.addEventListener("mousedown",e=>{const row=e.target.closest(".ph");if(row){e.preventDefault();goHit(palHits[+row.dataset.i])}});
+  i.addEventListener("blur",()=>setTimeout(()=>{if(document.activeElement!==i)r.hidden=true},120));
+  i.addEventListener("focus",()=>{if(palHits.length)r.hidden=false});
+}
+addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()=="k"||(e.key=="/"&&!e.target.closest("input,select,textarea"))){e.preventDefault();const i=$("#pq");i&&i.focus()}
+});
+const typing=e=>!!e.target.closest("input,select,textarea");
+
+/* ---------- upload + background job ---------- */
+let job={state:"idle"}, shown=false, dismissed=false;
+async function upload(f){
+  if(!/\.pdf$/i.test(f.name))return note("Only PDF files for now",true);
+  try{const r=await fetch("/api/upload",{method:"POST",headers:{...H,"X-Filename":enc(f.name)},body:f});
+      if(!r.ok)throw new Error((await r.json()).error)}
+  catch(e){return note(e.message,true)}
+  shown=true;dismissed=false;jobTick();
+}
+function renderJob(){
+  const b=$("#jobbox");if(!shown||dismissed){b.innerHTML="";return}
+  if(job.state=="running")b.innerHTML=`<div class="job"><b>Writing your guide</b><small>${esc(job.name)}</small><div class="indet"><i></i></div><small>${job.elapsed}s. Usually one to three minutes. Keep the app open.</small></div>`;
+  else if(job.state=="done")b.innerHTML=`<div class="job ok"><b>Guide ready</b><small>${esc(job.name)}. ${job.cls?"Filed under "+esc(job.cls)+".":"Not matched to a chapter yet."}</small><div style="display:flex;gap:6px"><a class="btn ink sm" href="#/deck/${enc(job.msg)}" id="jopen">Open</a><button class="btn ghost sm" id="jx">Dismiss</button></div></div>`;
+  else if(job.state=="error")b.innerHTML=`<div class="job err"><b>That didn't work</b><small>${esc(job.msg)}</small><div><button class="btn ghost sm" id="jx">Dismiss</button></div></div>`;
+  else b.innerHTML="";
+  const x=$("#jx");if(x)x.onclick=()=>{dismissed=true;renderJob()};
+  const o=$("#jopen");if(o)o.onclick=()=>{dismissed=true;setTimeout(renderJob,0)};
+}
+async function jobTick(){
+  let j;try{j=await api("/api/job")}catch{return}
+  const was=job.state;job=j;
+  if(j.state=="running"){shown=true;dismissed=false}
+  if(was=="running"&&j.state!="running"){shown=true;dismissed=false;if(j.state=="done"&&["","library","class","collection","progress"].includes(cur.view))route(true)}
+  renderJob();
+}
+setInterval(jobTick,2000);
+let dc=0;
+addEventListener("dragenter",e=>{if([...(e.dataTransfer?.types||[])].includes("Files")){dc++;$("#ov").classList.add("on")}});
+addEventListener("dragleave",()=>{dc=Math.max(0,dc-1);if(!dc)$("#ov").classList.remove("on")});
+addEventListener("dragover",e=>e.preventDefault());
+addEventListener("drop",e=>{e.preventDefault();dc=0;$("#ov").classList.remove("on");const f=e.dataTransfer.files[0];f&&upload(f)});
+
+/* ---------- router ---------- */
+async function route(keepScroll){
+  document.onkeydown=null;$(".findbar")?.remove();
+  const parts=location.hash.replace(/^#\/?/,"").split("/").map(decodeURIComponent), [tab,qs]=(parts[2]||"").split("?");
+  cur={view:parts[0]||"",a:parts[1]||"",tab:tab||"",q:new URLSearchParams(qs||"")};
+  if(cur.view=="classes"){location.hash="#/";return}
+  if(cur.view=="binder"){location.hash="#/collection";return}
+  try{await refresh()}catch{return}
+  shell();
+  const m=$("#main");
+  if(cur.view=="")pageHome(m);
+  else if(cur.view=="library")pageLibrary(m);
+  else if(cur.view=="collection")await pageCollection(m);
+  else if(cur.view=="progress")pageProgress(m);
+  else if(cur.view=="class")pageClass(m);
+  else if(cur.view=="deck")await pageDeck(m);
+  else location.hash="#/";
+  initTT(m);
+  if(!keepScroll)scrollTo(0,0);
+}
+addEventListener("hashchange",()=>{document.startViewTransition&&!still.matches?document.startViewTransition(()=>route()):route()});
+
+/* ---------- stats + charts (plain SVG) ---------- */
+const tipEl=document.createElement("div");tipEl.id="tip";document.body.append(tipEl);
+function showTip(t,x,y){
+  const [title,...rest]=JSON.parse(t.dataset.tip);tipEl.replaceChildren();
+  const b=document.createElement("b");b.textContent=title;tipEl.append(b);
+  rest.forEach(r=>{const s=document.createElement("span");s.textContent=r;tipEl.append(s,document.createElement("br"))});
+  tipEl.style.display="block";const w=tipEl.offsetWidth,h=tipEl.offsetHeight;
+  tipEl.style.left=Math.max(8,Math.min(x+14,innerWidth-w-8))+"px";tipEl.style.top=Math.max(8,Math.min(y+14,innerHeight-h-8))+"px";
+}
+document.addEventListener("pointermove",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");t?showTip(t,e.clientX,e.clientY):tipEl.style.display="none"});
+document.addEventListener("focusin",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t){const r=t.getBoundingClientRect();showTip(t,r.left+r.width/2,r.top)}});
+document.addEventListener("focusout",()=>tipEl.style.display="none");
+const tipAttr=a=>`data-tip="${esc(JSON.stringify(a))}"`;
+function mastery(d){
+  const ent=Object.values(S.progress[d.id]||{}),seen=Math.min(ent.length,d.cards),kn=Math.min(ent.filter(x=>x.box>=3).length,seen);
+  return {total:d.cards,known:kn,learning:seen-kn,fresh:d.cards-seen,due:Math.min(ent.filter(x=>x.due<=Date.now()).length,seen)};
+}
+function agg(ds){const m={total:0,known:0,learning:0,fresh:0,due:0};ds.forEach(d=>{const x=mastery(d);for(const k in m)m[k]+=x[k]});return m}
+const pct=m=>m.total?Math.round(m.known/m.total*100):0;
+function reviewsByDay(ids,n){
+  const start=day0(Date.now())-(n-1)*DAY,out=Array.from({length:n},(_,i)=>({t:start+i*DAY,n:0}));
+  ids.forEach(id=>(S.stats.reviews[id]||[]).forEach(t=>{const i=Math.round((day0(t)-start)/DAY);if(i>=0&&i<n)out[i].n++}));
+  return out;
+}
+function attempts(ids){
+  const a=[];ids.forEach(id=>(S.stats.quiz[id]||[]).forEach(x=>a.push({...x,id,pct:Math.round(x.score/x.total*100)})));
+  return a.sort((p,q)=>p.t-q.t);
+}
+const quizAvg=ids=>{const a=attempts(ids).slice(-10);return a.length?Math.round(a.reduce((s,x)=>s+x.pct,0)/a.length):null};
+const niceStep=x=>{const p=10**Math.floor(Math.log10(x||1)),f=x/p;return (f<=1?1:f<=2?2:f<=5?5:10)*p};
+function colChart(days,W=560){
+  const H=200,L=34,R=8,T=22,B=24,pw=W-L-R,ph=H-T-B,N=days.length,slot=pw/N,bw=Math.min(22,slot*.6);
+  const max=Math.max(...days.map(d=>d.n),1),step=niceStep(max/3),yMax=step*Math.ceil(max/step),ticks=[];
+  for(let v=0;v<=yMax;v+=step)ticks.push(v);
+  const y=v=>T+ph-v/yMax*ph;
+  let s=ticks.map(v=>`<line class="${v?"grid":"axis"}" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end">${v}</text>`).join("");
+  const top=days.reduce((a,d,i)=>d.n>days[a].n?i:a,0);
+  days.forEach((d,i)=>{
+    const x=L+i*slot+(slot-bw)/2,h=d.n/yMax*ph,yy=T+ph-h;
+    s+=`<rect class="hit" x="${L+i*slot}" y="${T}" width="${slot}" height="${ph}" tabindex="0" ${tipAttr([plural(d.n,"card"),fmtDayLong(d.t)])}/>`;
+    s+=d.n?(h>5?`<path class="bar" d="M${x} ${T+ph}V${yy+4}Q${x} ${yy} ${x+4} ${yy}H${x+bw-4}Q${x+bw} ${yy} ${x+bw} ${yy+4}V${T+ph}Z"/>`:`<rect class="bar" x="${x}" y="${yy}" width="${bw}" height="${h}"/>`):`<rect class="bar" x="${x}" y="${T+ph-1}" width="${bw}" height="1" style="opacity:.35"/>`;
+  });
+  if(days[top].n)s+=`<text class="lbl-end" x="${L+top*slot+slot/2}" y="${y(days[top].n)-7}" text-anchor="middle">${days[top].n}</text>`;
+  [0,Math.floor((N-1)/2),N-1].forEach((i,k)=>s+=`<text x="${L+i*slot+slot/2}" y="${H-6}" text-anchor="${k==0?"start":k==2?"end":"middle"}" ${k==0?`dx="${-slot/2+2}"`:k==2?`dx="${slot/2-2}"`:""}>${fmtDay(days[i].t)}</text>`);
+  return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Flashcards reviewed per day">${s}</svg>`;
+}
+function lineChart(at,W=560){
+  const H=200,L=40,R=22,T=22,B=24,pw=W-L-R,ph=H-T-B,N=at.length,slot=N>1?pw/(N-1):pw;
+  const x=i=>N>1?L+i*slot:L+pw/2,y=v=>T+ph-v/100*ph;
+  let s=[0,50,100].map(v=>`<line class="${v?"grid":"axis"}" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end">${v}%</text>`).join("");
+  const pts=at.map((a,i)=>[x(i),y(a.pct)]);
+  if(N>1){s+=`<path d="M${pts.map(p=>p.join(" ")).join("L")}L${pts[N-1][0]} ${T+ph}L${pts[0][0]} ${T+ph}Z" fill="var(--c1)" opacity=".08"/>`;
+    s+=`<path d="M${pts.map(p=>p.join(" ")).join("L")}" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`}
+  at.forEach((a,i)=>{
+    const bw=N>1?slot:pw,bx=N>1?pts[i][0]-slot/2:L,t=deckById(a.id);
+    s+=`<rect class="hit" x="${Math.max(L,bx)}" y="${T}" width="${N>1&&(i==0||i==N-1)?slot/2:bw}" height="${ph}" tabindex="0" ${tipAttr([a.pct+"%",a.score+" of "+a.total+" correct",t?t.title:a.id,fmtDayLong(a.t)])}/>`;
+    s+=`<line class="xh" x1="${pts[i][0]}" x2="${pts[i][0]}" y1="${T}" y2="${T+ph}" stroke="var(--axis)" opacity="0" style="pointer-events:none"/>`;
+    s+=`<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="4.5" fill="var(--c1)" stroke="var(--paper)" stroke-width="2" style="pointer-events:none"/>`;
+  });
+  s+=`<text class="lbl-end" x="${pts[N-1][0]}" y="${pts[N-1][1]-11}" text-anchor="${N>1?"end":"middle"}">${at[N-1].pct}%</text>`;
+  s+=`<text x="${L}" y="${H-6}" text-anchor="start">${fmtDay(at[0].t)}</text>`;
+  if(N>1)s+=`<text x="${W-R}" y="${H-6}" text-anchor="end">${fmtDay(at[N-1].t)}</text>`;
+  return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Quiz scores over time">${s}</svg>`;
+}
+function chartCard(id,title,sub,plot,table,empty){
+  return `<div class="card" id="${id}"><div class="ch"><h3>${title}</h3>${empty?"":`<button class="btn ghost sm" data-tbl="${id}">Table</button>`}</div><p class="sub">${sub}</p>
+    ${empty?`<div class="nodata">${empty}</div>`:plot+`<div class="tbl">${table}</div>`}</div>`;
+}
+const tableOf=(head,rows)=>`<table><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+let CH={days:[],at:[]};
+function fitCharts(){
+  [["#c-rev",w=>colChart(CH.days,w)],["#c-quiz",w=>lineChart(CH.at,w)]].forEach(([sel,f])=>{
+    const c=$(sel),p=c&&$("svg.plot",c);if(!p)return;p.outerHTML=f(Math.max(240,Math.round(c.clientWidth)))});
+}
+let fitT;addEventListener("resize",()=>{clearTimeout(fitT);fitT=setTimeout(fitCharts,120)});
+function stackedBar(m){
+  const seg=(c,n,label)=>n?`<b class="${c}" style="width:${n/m.total*100}%" tabindex="0" ${tipAttr([plural(n,"card"),label+", "+Math.round(n/m.total*100)+"%"])}></b>`:"";
+  return m.total?`<div class="stack">${seg("k",m.known,"Known")}${seg("l",m.learning,"Learning")}${seg("n",m.fresh,"New")}</div>`:`<div class="stack"><b class="n" style="width:100%"></b></div>`;
+}
+const legend=`<div class="legend"><span><i style="background:var(--c1)"></i>Known</span><span><i style="background:var(--c2)"></i>Learning</span><span><i style="background:var(--c3)"></i>New</span></div>`;
+function dashboard(ds){
+  const ids=ds.map(d=>d.id),m=agg(ds),days=reviewsByDay(ids,range),sum=days.reduce((a,d)=>a+d.n,0),active=days.filter(d=>d.n).length;
+  const all=attempts(ids),avg=quizAvg(ids),best=all.length?Math.max(...all.map(x=>x.pct)):null, at=all.slice(-20);
+  CH={days,at};
+  const figs=`<div class="figs">
+    <div class="fig"><div class="v">${pct(m)}%</div><div class="l">Flashcards known</div><div class="s">${m.known} of ${m.total} cards</div></div>
+    <div class="fig"><div class="v">${m.due}</div><div class="l">Due for review</div><div class="s">${m.learning} learning, ${m.fresh} new</div></div>
+    <div class="fig"><div class="v">${sum}</div><div class="l">Reviewed, last ${range} days</div><div class="s">${plural(active,"active day")}</div></div>
+    <div class="fig"><div class="v">${avg===null?"&ndash;":avg+"%"}</div><div class="l">Quiz average</div><div class="s">${plural(all.length,"attempt")}${best===null?"":", best "+best+"%"}</div></div></div>`;
+  const filters=`<div class="filters"><span class="lab">Range</span><div class="seg">${[7,14,30].map(n=>`<a href="javascript:void 0" data-range="${n}" class="${n==range?"on":""}">${n} days</a>`).join("")}</div></div>`;
+  const charts=`<div class="charts">
+    ${chartCard("c-rev","Flashcards reviewed",`Per day, last ${range} days`,colChart(days),tableOf(["Day","Cards"],days.map(d=>[fmtDayLong(d.t),d.n])),sum?"":"No reviews in this range yet.")}
+    ${chartCard("c-quiz","Quiz scores","Most recent 20 attempts",at.length?lineChart(at):"",tableOf(["Date","Guide","Score","%"],at.map(a=>[fmtDayLong(a.t),(deckById(a.id)||{}).title||a.id,a.score+"/"+a.total,a.pct+"%"])),at.length?"":"No quiz attempts yet.")}</div>`;
+  return {filters,figs,charts,m};
+}
+function examPill(c){
+  if(!c||!c.exam)return "";const n=daysTo(c.exam);
+  if(n<0)return `<span class="pill">Exam passed</span>`;
+  return `<span class="pill ${n<=7?"hot":n<=21?"soon":""}">Exam ${n==0?"today":"in "+plural(n,"day")}</span>`;
+}
+
+/* ---------- home: the open chapter ---------- */
+function pickDeck(ds){return ds.map(d=>({d,m:mastery(d)})).sort((a,b)=>(b.m.due-a.m.due)||(b.m.fresh-a.m.fresh))[0]}
+function defaultChapter(){const C=chapters();if(!C.length)return null;
+  const saved=C.find(c=>c.id==ls.get("ch"));if(saved)return saved;
+  return C.map(c=>({c,m:agg(decksOf(c.id))})).sort((a,b)=>b.m.due-a.m.due||b.m.fresh-a.m.fresh)[0].c}
+function spreadText(ch){
+  const C=chapters(),k=C.findIndex(x=>x.id==ch.id),ds=decksOf(ch.id),m=agg(ds),p=pickDeck(ds),n=ch.exam?daysTo(ch.exam):null;
+  const lead=!ds.length?"No guides in this chapter yet. Add one from the library, or drop a PDF and it may land here by itself."
+    :m.due?`${plural(m.due,"card")} waiting from earlier sessions. ${esc(p.d.title)} is up next.`
+    :m.fresh?`${plural(m.fresh,"new card")} to learn. Start with ${esc(p.d.title)}.`
+    :"Everything here is learned. A quiz will keep it sharp.";
+  const deckId=p?enc(p.d.id):"";
+  return `<div class="kick">${ch.loose?"Unfiled":"Chapter "+(k+1)+" of "+C.filter(c=>!c.loose).length}${examPill(ch.c)}</div>
+    <h1 class="${hsz(ch.name)}">${esc(ch.name)}</h1><p class="lede">${lead}</p>
+    <div class="facts"><div><span data-count="${pct(m)}">${pct(m)}</span>%<small>known</small></div><div><span data-count="${m.due}">${m.due}</span><small>due now</small></div>
+      ${ch.loose?`<div>${ds.length}<small>${ds.length==1?"guide":"guides"}</small></div>`:n!==null&&n>=0?`<div><span data-count="${n}">${n}</span><small>days to exam</small></div>`:`<div class="x" data-exam="${esc(ch.id)}">&ndash;<small>set exam date</small></div>`}</div>
+    ${ds.length?`<div class="go"><button class="btn ink lg" data-go="#/deck/${deckId}/cards">Continue studying</button>${p.d.guide?`<button class="btn" data-go="#/deck/${deckId}/guide">Read the guide</button>`:""}<button class="btn" data-go="#/deck/${deckId}/quiz">Take the quiz</button>${ch.loose?"":`<button class="btn ghost" data-go="#/class/${enc(ch.id)}">Open chapter</button>`}</div>`:""}`;
+}
+function margin(){
+  const goal=S.settings.goal,done=reviewedToday(),st=streakInfo(),left=Math.max(goal-done,0);
+  const ex=S.classes.classes.filter(c=>c.exam&&daysTo(c.exam)>=0).sort((a,b)=>a.exam<b.exam?-1:1)[0];
+  const dotsN=Math.min(goal,30),lit=Math.round(Math.min(done/goal,1)*dotsN);
+  return `<div class="blk">Today<b>${done} / ${goal}</b>${left?plural(left,"card")+" to your goal":"Goal reached"}<div class="dots goal">${Array.from({length:dotsN},(_,i)=>`<i class="${i<lit?"on":""}"></i>`).join("")}</div><button class="link" data-goal>Change goal</button></div>
+    <div class="blk">Streak<b>${plural(st.n,"day")}</b>${st.doneToday||!st.n?"":"Study today to keep it"}<div class="dots">${st.last7.map(d=>`<i class="${d.on?"on":""}" title="${fmtDayLong(d.t)}"></i>`).join("")}</div></div>
+    ${ex?`<div class="blk">Next exam<b class="${daysTo(ex.exam)<=7?"hot":""}">${plural(daysTo(ex.exam),"day")}</b>${esc(ex.name)}, ${plural(agg(decksOf(ex.id)).total-agg(decksOf(ex.id)).known,"card")} to learn</div>`:""}`;
+}
+function countUp(root){
+  if(still.matches)return;
+  $$("[data-count]",root).forEach(el=>{const to=+el.dataset.count,t0=performance.now();if(!to)return;
+    const step=t=>{const k=Math.min((t-t0)/650,1),e=1-Math.pow(1-k,3);el.textContent=Math.round(to*e);if(k<1&&el.isConnected)requestAnimationFrame(step)};requestAnimationFrame(step)});
+}
+function pageHome(m){
+  const C=chapters();
+  if(!S.decks.length&&!S.classes.classes.length){
+    m.innerHTML=`<section class="empty"><div><div class="kick">An empty journal</div><h1>Start your first chapter</h1><p class="lede">Drop a PDF of your slides or notes anywhere in this window. It becomes a study guide, flashcards and a quiz in a minute or two.</p><div class="go"><button class="btn ink lg" data-pick>Choose a PDF</button><button class="btn" data-newclass>Name a chapter first</button></div></div><div class="art">${tt("net",400,{auto:true})}</div></section>`;return}
+  const ch=defaultChapter();
+  const loose=S.decks.filter(d=>!classOf(d.id));
+  m.innerHTML=`<section class="spread"><div class="swap" id="sp-text">${spreadText(ch)}</div>
+    <div class="art swap" id="sp-art">${tt(chShape(ch),Math.min(520,innerWidth*.36),{auto:true})}<div class="cap">${esc(ch.name)}. Drag to turn.${ch.loose?"":` <button class="link" data-reroll="${esc(ch.id)}">Reroll object</button>`}</div></div>
+    <aside class="marg">${margin()}</aside></section>
+  <div class="tabs" role="tablist">${C.map((c,i)=>{const mm=agg(decksOf(c.id)),n=c.exam?daysTo(c.exam):null;return `<button class="tab ${c.id==ch.id?"on":""}" role="tab" aria-selected="${c.id==ch.id}" data-ch="${esc(c.id)}" title="${esc(c.name)}">${tt(chShape(c),58,{thumb:true,frame:4})}<span><small>${c.loose?"Unfiled":"Ch. "+(i+1)} &middot; ${pct(mm)}% known</small><b>${esc(c.name)}</b></span><em>${plural(mm.total,"card")}${mm.due?`, ${mm.due} due`:""}${n!==null&&n>=0?` &middot; exam in ${n}d`:""}</em><div class="bar"><i style="width:${pct(mm)}%"></i></div></button>`}).join("")}
+    <button class="tab add" data-newclass>+ New chapter</button></div>
+  ${loose.length&&S.classes.classes.length?"":""}`;
+  countUp(m);
+}
+function openChapter(id){
+  const ch=chapters().find(c=>c.id==id);if(!ch)return;ls.set("ch",id);
+  $$(".tab").forEach(t=>{const on=t.dataset.ch==id;t.classList.toggle("on",on);t.setAttribute("aria-selected",on)});
+  const tx=$("#sp-text"),ar=$("#sp-art");
+  tx.classList.remove("swap");ar.classList.remove("swap");void tx.offsetWidth;
+  tx.innerHTML=spreadText(ch);ar.innerHTML=`${tt(chShape(ch),Math.min(520,innerWidth*.36),{auto:true})}<div class="cap">${esc(ch.name)}. Drag to turn.${ch.loose?"":` <button class="link" data-reroll="${esc(ch.id)}">Reroll object</button>`}</div>`;
+  tx.classList.add("swap");ar.classList.add("swap");initTT(ar);countUp(tx);
+}
+
+/* ---------- rows ---------- */
+function deckRow(d,inCh=false){
+  const m=mastery(d),c=classOf(d.id),id=esc(enc(d.id));
+  return `<div class="row" data-open="${esc(d.id)}" tabindex="0" role="link">
+    <div><h3>${esc(d.title)}</h3><p class="meta">${plural(d.cards,"flashcard")}, ${plural(d.quiz,"question")}${c&&!inCh?` &middot; ${esc(c.name)}`:""}</p></div>
+    <div class="mast">${stackedBar(m)}<span>${m.known} of ${m.total} known${m.due?`, ${m.due} due`:""}</span></div>
+    <div class="act">${d.guide?`<button class="btn sm" data-go="#/deck/${id}/guide">Guide</button>`:""}<button class="btn sm" data-go="#/deck/${id}/cards">Flashcards</button><button class="btn sm" data-go="#/deck/${id}/quiz">Quiz</button>
+    ${inCh?`<button class="btn ghost sm" data-out="${esc(d.id)}">Remove</button>`:`<button class="btn ghost sm" data-del="${esc(d.id)}">Delete</button>`}</div></div>`;
+}
+function pageLibrary(m){
+  m.innerHTML=`<div class="sechead" style="margin-top:30px"><div><h2>Library</h2><p class="muted" style="margin-top:10px">Every study guide, newest first.</p></div></div>
+  ${S.decks.length?`${legend}<div class="list">${[...S.decks].sort((a,b)=>b.mtime-a.mtime).map(d=>deckRow(d)).join("")}</div>`:`<div class="nodata">No guides yet. Drop a PDF anywhere in this window.</div>`}`;
+}
+function pageClass(m){
+  const c=S.classes.classes.find(x=>x.id==cur.a);if(!c){location.hash="#/";return}
+  const ch=chapters().find(x=>x.id==c.id),k=S.classes.classes.indexOf(c);
+  const mine=decksOf(c.id), free=S.decks.filter(d=>!classOf(d.id));
+  const D=dashboard(mine),mm=D.m,left=mm.total-mm.known,n=c.exam?daysTo(c.exam):null;
+  m.innerHTML=`<p class="crumb"><a href="#/">Chapters</a></p>
+  <section class="opener"><div class="swap"><div class="kick">Chapter ${k+1} of ${S.classes.classes.length}${examPill(c)}</div><h1 class="${hsz(c.name)}">${esc(c.name)}</h1>
+    <p class="lede">${plural(mine.length,"guide")}, ${plural(mm.total,"card")}, ${mm.known} known.${n!==null&&n>0&&left?` About ${Math.ceil(left/n)} new cards a day gets you there before the exam.`:""}</p>
+    <div class="examrow">${c.exam?`<span class="muted">Exam on ${new Date(c.exam+"T00:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"})}</span><button class="btn ghost sm" data-exam="${esc(c.id)}">Change</button><button class="btn ghost sm" data-noexam="${esc(c.id)}">Clear</button>`:`<button class="btn sm" data-exam="${esc(c.id)}">Set exam date</button>`}<button class="btn ghost sm" data-ren="${esc(c.id)}">Rename</button><button class="btn ghost sm" data-rmclass="${esc(c.id)}">Delete chapter</button></div></div>
+    <div class="art swap" id="sp-art">${tt(chShape(ch),420,{auto:true})}<div class="cap"><button class="link" data-reroll="${esc(c.id)}">Reroll object</button></div></div></section>
+  <div class="sechead"><h2>Contents</h2>${free.length?`<select data-add="${esc(c.id)}"><option value="">Add a guide to this chapter</option>${free.map(d=>`<option value="${esc(d.id)}">${esc(d.title)}</option>`).join("")}</select>`:""}</div>
+  ${mine.length?`${legend}<div class="list">${mine.map(d=>deckRow(d,true)).join("")}</div>`:`<div class="nodata">No guides in this chapter yet.</div>`}
+  ${mine.length?`<div class="sechead"><h2>Progress</h2>${D.filters}</div>${D.figs}${D.charts}`:""}`;
+  fitCharts();
+}
+function pageProgress(m){
+  const x=xpInfo(),st=streakInfo(),D=dashboard(S.decks),C=chapters();
+  m.innerHTML=`<div class="sechead" style="margin-top:30px"><h2>Progress</h2>${D.filters}</div>
+  <div class="level"><div class="lv">Level ${x.level}</div><div class="xp"><div class="muted">${x.into} of ${XPL} XP to level ${x.level+1}. Ten for every card reviewed, twenty for every quiz answer you get right.</div><div class="bar"><i style="width:${x.into/XPL*100}%"></i></div><div class="muted">${x.xp.toLocaleString()} XP in total, ${plural(st.n,"day")} in a row</div></div></div>
+  ${D.figs}${D.charts}
+  <h2 class="sec">By chapter</h2>
+  <table class="chap"><thead><tr><th>Chapter</th><th style="width:34%">Mastery</th><th>Due</th><th>Quiz average</th><th>Exam</th></tr></thead><tbody>
+  ${C.map(c=>{const ds=decksOf(c.id),mm=agg(ds),qa=quizAvg(ds.map(d=>d.id));return `<tr><td><a href="${c.loose?"#/library":"#/class/"+enc(c.id)}"><b>${esc(c.name)}</b></a></td><td><div class="mast">${stackedBar(mm)}<span>${pct(mm)}% of ${mm.total}</span></div></td><td>${mm.due}</td><td>${qa===null?"&ndash;":qa+"%"}</td><td>${c.c&&c.c.exam?examPill(c.c):"&ndash;"}</td></tr>`}).join("")}</tbody></table>`;
+  fitCharts();
+}
+async function pageCollection(m){
+  let col;try{col=(await api("/api/collection")).decks}catch{return}
+  let total=0,got=0,top=0;
+  const sec=ch=>{let html="",n=0,k=0;
+    decksOf(ch.id).forEach(d=>{const dk=col.find(x=>x.id==d.id);if(!dk)return;const p=S.progress[d.id]||{};
+      dk.cards.forEach((front,i)=>{n++;const pr=p[front],t=tierOf(pr);if(t)k++;if(pr&&pr.box>=4)top++;
+        html+=`<a class="tile ${t?"s":""}" style="${t?`--tier:${t[1]}`:""}" href="#/deck/${enc(d.id)}/cards?i=${i}" ${tipAttr([t?t[0]:"Not studied yet",clean(front).slice(0,140)])}></a>`})});
+    total+=n;got+=k;
+    return n?`<section class="coll"><div class="ch">${tt(chShape(ch),56,{thumb:true,frame:4})}<h3>${esc(ch.name)}</h3><span class="cnt">${k} of ${n} studied</span></div><div class="grid">${html}</div></section>`:""};
+  const body=chapters().map(sec).join("");
+  m.innerHTML=`<div class="sechead" style="margin-top:30px"><div><h2>Collection</h2><p class="muted" style="margin-top:10px">${got} of ${total} cards studied${top?`, ${top} mastered`:""}. Each card darkens as you get it right on later days.</p></div></div>
+  <div class="tiers"><span><i style="box-shadow:inset 0 0 0 1.5px var(--paper3)"></i>Not studied</span>${TIERS.map(t=>`<span><i style="background:${t[1]}"></i>${t[0]}</span>`).join("")}</div>${body||`<div class="nodata">No cards yet.</div>`}`;
+}
+
+/* ---------- math: KaTeX for real LaTeX, plain ^ and _ become superscripts and subscripts ---------- */
+// s is already HTML-escaped. ^{...} (balanced, may hold spaces), ^10, ^n, ^(n-1); same for _. snake_case like actor_id is left alone.
+function scripts(s){
+  let out="",i=0;
+  while(i<s.length){const c=s[i];
+    if((c=="^"||c=="_")&&i>0&&/[\p{L}\p{N})\]′'}]/u.test(s[i-1])){
+      const tag=c=="^"?"sup":"sub";
+      if(s[i+1]=="{"){let d=0,j=i+1;for(;j<s.length;j++){if(s[j]=="{")d++;else if(s[j]=="}"&&--d==0)break}
+        if(j<s.length){out+=`<${tag}>${scripts(s.slice(i+2,j))}</${tag}>`;i=j+1;continue}}
+      const m=s.slice(i+1).match(/^(?:[−-]?\d+|\p{L}(?![\p{L}\p{N}]))|^\([^()]{1,24}\)/u);
+      if(m){const inner=m[0][0]=="("?m[0].slice(1,-1):m[0];out+=`<${tag}>${inner}</${tag}>`;i+=1+m[0].length;continue}
+    }
+    out+=c;i++}
+  return out;
+}
+const plainMath=s=>scripts(esc(s)).replace(/\bsqrt(?=\()/g,"√");
+const MATH_SKIP="code,pre,script,style,textarea,.katex,.mathblock,sup,sub";
+const tex=(t,display)=>{try{return katex.renderToString(t,{throwOnError:true,displayMode:display,output:"html"})}catch{return null}};
+function renderMath(root){
+  if(!root)return;
+  $$(".mathblock[data-tex]",root).forEach(b=>{const h=window.katex&&tex(b.dataset.tex,true);
+    if(h){b.innerHTML=h;b.removeAttribute("data-tex")}else b.outerHTML=`<pre><code>${esc(b.dataset.tex)}</code></pre>`});
+  const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest(MATH_SKIP)||!/[\^_\\$]|sqrt\(/.test(n.data)?3:1}),nodes=[];
+  while(tw.nextNode())nodes.push(tw.currentNode);
+  nodes.forEach(n=>{
+    const s=n.data,rx=/\$([^$\n]{1,200}?)\$|\\\((.{1,200}?)\\\)|(\S*\\[a-zA-Z]{2,}\S*)/g;let html="",last=0,m;
+    while((m=rx.exec(s))){let src=m[1]??m[2]??m[3],trail="";
+      if(m[3]){const t=src.match(/[.,;:!?]+$/);if(t){trail=t[0];src=src.slice(0,-trail.length)}}
+      const h=window.katex&&tex(src,false);if(!h)continue;
+      html+=plainMath(s.slice(last,m.index))+h+esc(trail);last=m.index+m[0].length}
+    html+=plainMath(s.slice(last));
+    if(html!==esc(s)){const t=document.createElement("template");t.innerHTML=html;n.replaceWith(t.content)}});
+}
+
+/* small markdown renderer for the study guide text */
+function md(src){
+  const out=[];let para=[],list=null,tbl=null,code=null,lang="";
+  const inl=s=>esc(s.replace(/\\([[\]_*#|])/g,"$1")).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\w)/g,"$1<em>$2</em>");
+  const fP=()=>{if(para.length){out.push("<p>"+inl(para.join(" "))+"</p>");para=[]}};
+  const fL=()=>{if(list){out.push(`<${list.t}>${list.items.join("")}</${list.t}>`);list=null}};
+  const fT=()=>{if(!tbl)return;const rows=tbl.filter(r=>!/^[\s|:-]+$/.test(r)).map(r=>r.trim().replace(/^\||\|$/g,"").split("|").map(c=>inl(c.trim())));
+    if(rows.length)out.push(`<div class="scroll"><table><thead><tr>${rows[0].map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${rows.slice(1).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`);tbl=null};
+  const flush=()=>{fP();fL();fT()};
+  for(const raw of String(src).replace(/\r/g,"").split("\n")){
+    if(code){if(/^\s*```/.test(raw)){out.push(/^(latex|tex|math|katex)$/.test(lang)?`<div class="mathblock" data-tex="${esc(code.join("\n"))}"></div>`:"<pre><code>"+esc(code.join("\n"))+"</code></pre>");code=null}else code.push(raw);continue}
+    if(/^\s*```/.test(raw)){flush();code=[];lang=raw.trim().slice(3).trim().toLowerCase();continue}
+    const line=raw.trimEnd();let m;
+    if(!line.trim()){flush();continue}
+    if(m=line.match(/^(#{1,6})\s+(.*)$/)){flush();const n=Math.min(m[1].length+2,5);out.push(`<h${n}>${inl(m[2])}</h${n}>`);continue}
+    if(/^\s*\|.*\|\s*$/.test(line)){fP();fL();(tbl=tbl||[]).push(line);continue}
+    fT();
+    if(m=line.match(/^\s*([-*+]|\d+\.)\s+(.*)$/)){fP();const t=/\d/.test(m[1])?"ol":"ul";if(list&&list.t!=t)fL();(list=list||{t,items:[]}).items.push("<li>"+inl(m[2])+"</li>");continue}
+    fL();para.push(line.trim());
+  }
+  if(code)out.push("<pre><code>"+esc(code.join("\n"))+"</code></pre>");flush();return out.join("");
+}
+function guideView(g){
+  const S_=[];const add=(id,title,html)=>html&&S_.push({id,title,html});
+  add("g-overview","Overview",g.summary&&`<p>${esc(g.summary)}</p>`);
+  add("g-notes","Notes",g.notes&&md(g.notes));
+  add("g-concepts","Key concepts",g.concepts.length&&`<ul>${g.concepts.map(c=>`<li>${fmt(c)}</li>`).join("")}</ul>`);
+  add("g-glossary","Glossary",g.glossary.length&&`<dl>${g.glossary.map(x=>`<dt>${esc(x.term)}</dt><dd>${esc(x.definition)}</dd>`).join("")}</dl>`);
+  add("g-cheat","Cheat sheet",g.cheat&&md(g.cheat));
+  add("g-take","Takeaways",g.takeaways.length&&`<ul>${g.takeaways.map(c=>`<li>${fmt(c)}</li>`).join("")}</ul>`);
+  $("#stage").innerHTML=`<div class="reader"><nav class="toc" id="toc"></nav><article>${S_.map(s=>`<section id="${s.id}"><h2>${s.title}</h2>${s.html}</section>`).join("")}</article></div>`;
+  renderMath($("article"));
+  // contents: every section plus the notes' own headings
+  let n=0;const items=[];
+  $$("article section").forEach(sec=>{items.push(`<a href="javascript:void 0" data-jump="${sec.id}">${esc($("h2",sec).textContent)}</a>`);
+    $$("h3,h4",sec).forEach(h=>{h.id="h-"+(++n);items.push(`<a class="h3" ${h.tagName=="H4"?'style="padding-left:36px"':""} href="javascript:void 0" data-jump="${h.id}">${esc(h.textContent)}</a>`)})});
+  $("#toc").innerHTML=`<div class="lab">Contents</div>${items.join("")}`;
+  const targets=$$("article section, article h3, article h4"),links=$$("#toc a");
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle("on",a.dataset.jump==e.target.id))}})},{rootMargin:"-100px 0px -70% 0px"});
+  targets.forEach(t=>io.observe(t));
+}
+
+/* ---------- "See in guide": find where a flashcard is explained ---------- */
+const STOP=new Set("the and for with that this from are was were what which when where how why who whom into than then them they their there these those your you can does did not but has have had its also will would should could each such more most other some any all may use used using about over only between both same very just been being because while per via one two our out get got make made like within without onto upon itself is an a of to in on at by as or be if it".split(" "));
+const stem=w=>w.length>5?w.replace(/(ies)$/,"y").replace(/(ing|ed|es|ly|s)$/,""):w;  // light: keys~key, encrypted~encrypt
+const toks=s=>(String(s).toLowerCase().match(/[a-z0-9]+(?:[.'’+-][a-z0-9]+)*/g)||[]).filter(w=>w.length>2&&!STOP.has(w)).map(stem);
+// Rank passages by shared words; rare words count more (idf), long passages are damped.
+// strict: the closest wording (offline fallback). wide: a shortlist of up to 40 for the model to judge by meaning.
+function rankPassages(cardText,texts,wide=false){
+  const sets=texts.map(t=>new Set(toks(t))),N=texts.length||1,df={},q=new Set(toks(cardText)),out=[];
+  sets.forEach(s=>s.forEach(w=>df[w]=(df[w]||0)+1));
+  sets.forEach((s,i)=>{let sc=0;const words=[];q.forEach(w=>{if(s.has(w)){sc+=Math.log(1+N/df[w]);words.push(w)}});
+    if(wide?words.length>=1:(words.length>=2||(words.length==1&&df[words[0]]<=2&&words[0].length>5)))out.push({i,score:sc/(1+Math.log(1+s.size)/4),words})});
+  out.sort((a,b)=>b.score-a.score);
+  if(wide)return out.slice(0,40);
+  return out.length?out.filter(x=>x.score>=out[0].score*.62).slice(0,5):out;
+}
+function markWords(el,words){
+  const ws=words.filter(w=>w.length>=4);if(!ws.length)return;
+  const rx=new RegExp("\\b("+ws.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\w*","gi");
+  const tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest(".katex")?3:1}),nodes=[];while(tw.nextNode())nodes.push(tw.currentNode);
+  nodes.forEach(n=>{rx.lastIndex=0;if(!rx.test(n.data))return;rx.lastIndex=0;const f=document.createDocumentFragment();let last=0;
+    n.data.replace(rx,(m,_,off)=>{f.append(n.data.slice(last,off));const mk=document.createElement("mark");mk.className="w";mk.textContent=m;f.append(mk);last=off+m.length;return m});
+    f.append(n.data.slice(last));n.replaceWith(f)});
+}
+function clearFound(){$$("article .found").forEach(e=>e.classList.remove("found","cur"));$$("article mark.w").forEach(m=>m.replaceWith(m.textContent));$(".findbar")?.remove()}
+async function findInGuide(id,card,idx){
+  clearFound();
+  const blocks=[],heads=[];let h="";
+  $$("article h2, article h3, article h4, article p, article li, article dd, article dt, article td, article pre").forEach(e=>{if(/^H[234]$/.test(e.tagName)){h=e.textContent.trim();return}blocks.push(e);heads.push(h)});
+  const texts=blocks.map(b=>b.textContent.replace(/\s+/g," ").trim()),cardText=clean(card.q)+" "+clean(card.a);
+  const bar=document.createElement("div");bar.className="findbar";bar.setAttribute("role","status");document.body.append(bar);
+  const tail=`<button id="fbb">Back to the card</button><button class="x" id="fbc">Clear</button>`;
+  const wire=()=>{$("#fbb").onclick=()=>{location.hash=`#/deck/${enc(id)}/cards?i=${idx}`};$("#fbc").onclick=clearFound};
+  bar.innerHTML=`<span><i class="spin"></i>Finding where this is explained</span>`+tail;wire();
+  const wide=rankPassages(cardText,texts,true);let picked=null,mode="model";
+  if(wide.length){try{const r=await api("/api/locate",{method:"POST",body:JSON.stringify({q:clean(card.q),a:clean(card.a),passages:wide.map(w=>({text:texts[w.i],heading:heads[w.i]}))})});
+    picked=r.passages.map(j=>wide[j]).filter(Boolean)}catch{picked=null}}
+  if(!bar.isConnected)return;  // left the page or cleared while the model was thinking
+  if(!picked||!picked.length){mode=picked?"none":"offline";picked=rankPassages(cardText,texts)}
+  const els=[];
+  picked.forEach(p=>{const el=blocks[p.i].tagName=="TD"?blocks[p.i].closest("tr"):blocks[p.i];if(!els.includes(el)){els.push(el);markWords(el,p.words)}});
+  els.forEach(e=>e.classList.add("found"));
+  const label=!els.length?"This card isn't covered in the guide."
+    :mode=="model"?`Explained in ${plural(els.length,"place")}`
+    :mode=="none"?`Not explained directly. Closest wording in ${plural(els.length,"place")}`
+    :`Closest wording in ${plural(els.length,"place")} (offline match)`;
+  bar.innerHTML=`<span>${els.length?"<i></i>":""}${label}</span>${els.length>1?`<button id="fbp">Previous</button><span id="fbn" style="opacity:.7"></span><button id="fbx">Next</button>`:""}`+tail;wire();
+  let k=0;const show=()=>{els.forEach((e,j)=>e.classList.toggle("cur",j==k));els[k].scrollIntoView({behavior:still.matches?"auto":"smooth",block:"center"});const n=$("#fbn");if(n)n.textContent=`${k+1} of ${els.length}`};
+  if(els.length)show();
+  const p=$("#fbp"),x=$("#fbx");if(p)p.onclick=()=>{k=(k-1+els.length)%els.length;show()};if(x)x.onclick=()=>{k=(k+1)%els.length;show()};
+}
+
+/* ---------- deck page ---------- */
+async function more(btn,id,kind){
+  const label=btn.textContent;btn.disabled=true;btn.textContent="Writing new ones, up to a minute";
+  try{return await api("/api/more/"+enc(id),{method:"POST",body:JSON.stringify({kind})})}
+  catch(e){note(e.message,true);btn.disabled=false;btn.textContent=label}
+}
+async function pageDeck(m){
+  const id=cur.a;
+  let D;try{D=await api("/api/deck/"+enc(id))}catch{location.hash="#/";return}
+  const g=D.guide,hasGuide=!!(g.notes||g.summary);
+  const tab=["guide","cards","quiz"].includes(cur.tab)&&(cur.tab!="guide"||hasGuide)?cur.tab:(hasGuide?"guide":"cards");
+  const prog=S.progress[id]=S.progress[id]||{}, cls=classOf(id), C=S.classes.classes;
+  const missed=(S.stats.missed[id]||[]).filter(q=>D.quiz.some(x=>x.q==q));
+  m.innerHTML=`<p class="crumb"><a href="#/">Chapters</a>${cls?` &rsaquo; <a href="#/class/${enc(cls.id)}">${esc(cls.name)}</a>`:""}</p>
+  <div class="dhead"><h1>${esc(D.title)}</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${C.length?`<select data-setclass="${esc(id)}" aria-label="Chapter"><option value="">No chapter</option>${C.map(c=>`<option value="${esc(c.id)}"${cls&&c.id==cls.id?" selected":""}>${esc(c.name)}</option>`).join("")}</select>`:""}
+    ${tab=="guide"?"":`<button class="btn soft" id="gm">Write ${tab=="cards"?"15 more flashcards":"12 more questions"}</button>`}</div></div>
+  <nav class="utabs">${hasGuide?`<a href="#/deck/${enc(id)}/guide" class="${tab=="guide"?"on":""}">Guide</a>`:""}<a href="#/deck/${enc(id)}/cards" class="${tab=="cards"?"on":""}">Flashcards<span>${D.cards.length}</span></a><a href="#/deck/${enc(id)}/quiz" class="${tab=="quiz"?"on":""}">Quiz<span>${D.quiz.length}</span></a></nav>
+  <div class="stage" id="stage"></div>`;
+  const gm=$("#gm");if(gm)gm.onclick=async e=>{const n=D.quiz.length;if(await more(e.target,id,tab=="cards"?"cards":"quiz")){if(tab=="quiz")quizFrom[id]=n;route(true)}};
+  const qi=cur.q.get("i")===null?-1:+cur.q.get("i");
+  if(tab=="guide"){guideView(g);const s=cur.q.get("sec"),el=s&&document.getElementById(s),ci=cur.q.get("card");
+    if(ci!==null&&D.cards[+ci])setTimeout(()=>findInGuide(id,D.cards[+ci],+ci),80);else if(el)setTimeout(()=>el.scrollIntoView({behavior:"smooth"}),80)}
+  else if(tab=="cards")cardsView(id,D,prog,{first:qi});
+  else quizView(id,D,{start:quizFrom[id]||0,only:qi>=0?[D.quiz[qi].q]:null,missed});
+}
+
+function cardsView(id,D,prog,{all=false,first=-1}={}){
+  const st=$("#stage"),now=Date.now(),due=c=>!prog[c.q]||prog[c.q].due<=now;
+  let queue=shuffle(D.cards.filter(c=>all||due(c)));
+  if(first>=0&&D.cards[first]){queue=queue.filter(c=>c!==D.cards[first]);queue.unshift(D.cards[first])}
+  let flip=false,done=0,busy=false;const total=queue.length,won=[];
+  const save=()=>api("/api/progress/"+enc(id),{method:"POST",body:JSON.stringify(prog)}).catch(()=>{});
+  const face=(c,side)=>{const t=tierOf(prog[c.q]);
+    return `<div class="face ${side}" style="${t?`--tier:${t[1]}`:""}"><div class="top"><span>${side=="front"?"Question":"<b>Answer</b>"}</span><span>${D.cards.indexOf(c)+1} / ${D.cards.length}</span></div>
+      <div class="body">${fmt(side=="front"?c.q:c.a)}</div>
+      <div class="foot"><span class="tier"><i></i>${t?t[0]:"New card"}</span><span>${side=="front"?"Space to turn":"1 again, 2 got it"}</span></div></div>`};
+  const draw=deal=>{
+    if(!queue.length){
+      st.innerHTML=`<div class="result"><div class="big">${done}<small>${total?"cleared":"due"}</small></div>
+        <div><h2>${total?"Session complete":"Nothing due here"}</h2><p>${total?"Cards you missed return sooner. Cards you know come back later and darken in your collection.":"Every card in this guide is scheduled for later. Study them all anyway, or write new ones."}</p>
+        ${won.length?`<div class="won">${won.slice(0,24).map((t,i)=>`<span class="tile s" style="--tier:${t[1]};--i:${i}" ${tipAttr([t[0],""])}></span>`).join("")}</div>`:""}
+        <div class="go" style="margin-top:0"><button class="btn ink lg" id="al">Study every card</button><button class="btn" id="mc">Write 15 new flashcards</button></div></div></div>`;
+      $("#al").onclick=()=>cardsView(id,D,prog,{all:true});
+      $("#mc").onclick=async e=>{if(await more(e.target,id,"cards"))route(true)};return}
+    const c=queue[0];
+    st.innerHTML=`<div class="desk"><div class="prog"><span>${done} of ${total}</span><div class="line"><i style="width:${total?done/total*100:0}%"></i></div><span>${plural(queue.length,"card")} left</span></div>
+      <div class="fc" id="fc" tabindex="0" role="button" aria-label="Flashcard. Press Space to turn it."><div class="fc-in">${face(c,"front")}${face(c,"back")}</div></div>
+      <div class="ctl" id="ctl"></div></div>`;
+    ctl();renderMath($("#fc"));$("#fc").onclick=()=>toggle();
+    if(deal&&!still.matches)$("#fc").animate([{transform:"translateY(26px)",opacity:0},{transform:"none",opacity:1}],{duration:460,easing:"cubic-bezier(.16,1,.3,1)"});
+  };
+  const hasGuide=!!(D.guide.notes||D.guide.summary);
+  const seeGuide=()=>{location.hash=`#/deck/${enc(id)}/guide?card=${D.cards.indexOf(queue[0])}`};
+  const ctl=()=>{const b=$("#ctl");if(!b)return;
+    b.innerHTML=flip?`<button class="btn bad lg" id="ag">Again <kbd>1</kbd></button><button class="btn acc lg" id="gt">Got it <kbd>2</kbd></button>${hasGuide?`<button class="btn soft lg" id="sg">See in guide <kbd>G</kbd></button>`:""}`:`<button class="btn ink lg" id="sh">Show answer <kbd>Space</kbd></button>`;
+    if(flip){$("#ag").onclick=()=>rate(false);$("#gt").onclick=()=>rate(true);const sg=$("#sg");if(sg)sg.onclick=seeGuide}else $("#sh").onclick=()=>toggle()};
+  const toggle=()=>{if(busy)return;flip=!flip;$("#fc").classList.toggle("flip",flip);ctl()};
+  const rate=ok=>{if(busy)return;busy=true;
+    const c=queue.shift(),p=prog[c.q]||{box:0};p.box=ok?Math.min(p.box+1,5):0;p.due=Date.now()+(ok?INT[p.box]*DAY:0);prog[c.q]=p;
+    if(ok){done++;won.push(tierOf(p))}else queue.push(c);
+    save();stat("review",id);
+    const next=()=>{flip=false;busy=false;draw(true)};
+    if(still.matches){next();return}
+    $("#fc").animate([{transform:"none",opacity:1},{transform:`translateX(${ok?120:-120}px) rotate(${ok?4:-4}deg)`,opacity:0}],{duration:260,easing:"cubic-bezier(.5,0,.75,0)",fill:"forwards"}).onfinish=next;
+  };
+  document.onkeydown=e=>{if(!$("#fc")||e.target.closest("select,input"))return;
+    if(e.key==" "){e.preventDefault();toggle()}else if(flip&&e.key=="1")rate(false);else if(flip&&e.key=="2")rate(true);else if(flip&&hasGuide&&e.key.toLowerCase()=="g")seeGuide()};
+  draw(true);
+}
+
+function quizView(id,D,{start=0,only=null,missed=[]}={}){
+  const st=$("#stage");
+  const Q=only?D.quiz.filter(q=>only.includes(q.q)):D.quiz.slice(start);
+  let i=0,score=0,wrong=[],right=[],posted=false;
+  const stem=q=>clean(q.o.length?q.q.split(/\n\s*A[\).]/)[0]:q.q).trim();
+  const draw=()=>{
+    document.onkeydown=null;
+    if(!Q.length){st.innerHTML=`<div class="nodata">No questions yet. Write some to start.</div>`;return}
+    if(i>=Q.length){
+      if(!posted){posted=true;stat("quiz",id,{score,total:Q.length,missed:wrong,right});
+        S.stats.missed[id]=[...(S.stats.missed[id]||[]).filter(q=>!right.includes(q)&&!wrong.includes(q)),...wrong]}
+      const perfect=score==Q.length,r=score/Q.length;
+      st.innerHTML=`<div class="result"><div class="big">${score}<small>/ ${Q.length}</small></div>
+        <div><h2>${perfect?"A perfect round":r>=.7?"A strong round":"Round complete"}</h2><p>${perfect?"Every answer right. Write new questions or move on to the next chapter.":plural(wrong.length,"question")+" to go back over. Replay only those until they stick."}</p>
+        <div class="go" style="margin-top:0">${wrong.length?`<button class="btn ink lg" id="rm">Replay missed (${wrong.length})</button>`:""}<button class="btn ${wrong.length?"":"ink lg"}" id="mq">Write 12 new questions</button><button class="btn ghost" id="rs">Play this round again</button></div></div></div>`;
+      const rm=$("#rm");if(rm)rm.onclick=()=>quizView(id,D,{only:wrong.slice()});
+      $("#rs").onclick=()=>quizView(id,D,{start,only});
+      $("#mq").onclick=async e=>{const n=D.quiz.length;if(await more(e.target,id,"quiz")){quizFrom[id]=n;route(true)}};return}
+    const q=Q[i];let done=false;
+    st.innerHTML=`<div class="qwrap">${i==0&&missed.length&&!only&&!start?`<div style="margin-bottom:26px"><button class="btn soft" id="rv">Replay ${plural(missed.length,"missed question")} first</button></div>`:""}
+      <div class="prog"><span>Question ${i+1} of ${Q.length}</span><div class="line"><i style="width:${i/Q.length*100}%"></i></div><span>${score} right</span></div>
+      <div class="q" id="qt">${esc(stem(q))}</div><div id="inp"></div><div id="fb"></div>
+      <div class="qnav"><span class="muted" id="hint"></span><button class="btn ink" id="nx">${i+1<Q.length?"Next question":"Finish round"}</button></div></div>`;
+    if(!still.matches)$("#qt").animate([{transform:"translateY(14px)",opacity:0},{transform:"none",opacity:1}],{duration:420,easing:"cubic-bezier(.16,1,.3,1)"});
+    const rv=$("#rv");if(rv)rv.onclick=()=>quizView(id,D,{only:missed.slice()});
+    const inp=$("#inp"),fb=$("#fb");
+    const finish=ok=>{if(done)return;done=true;if(ok){score++;right.push(q.q)}else wrong.push(q.q);
+      fb.innerHTML=`<div class="explain ${ok?"ok":"no"}"><b>${ok?"Correct":"The answer is "+fmt(q.a)}</b>\n${fmt(q.e)}</div>`;renderMath(fb)};
+    const choose=(keys,correct)=>{const btns=$$(".opt",inp);const pick=b=>{if(done)return;const ok=b.dataset.k==correct;b.classList.add(ok?"right":"wrong");
+        btns.forEach(x=>{x.disabled=true;if(x.dataset.k==correct)x.classList.add("right")});finish(ok)};
+      btns.forEach(b=>b.onclick=()=>pick(b));
+      $("#hint").textContent=`Press ${keys} to answer`;
+      document.onkeydown=e=>{if(e.target.closest("input"))return;const k=e.key.toUpperCase(),n="1234".indexOf(k),b=btns.find(x=>x.dataset.key==k)||btns[n];
+        if(b&&!done){e.preventDefault();pick(b)}else if(done&&e.key=="Enter"){e.preventDefault();$("#nx").click()}}};
+    if(q.o.length){
+      inp.innerHTML=q.o.map((o,j)=>`<button class="opt" data-k="${esc(o[0])}" data-key="${"ABCD"[j]}"><span class="key">${"ABCD"[j]}</span><span>${esc(clean(o).replace(/^[A-D][).]\s*/,""))}</span></button>`).join("");
+      choose("A to D",q.a.trim()[0]);
+    }else if(q.t=="true_false"){
+      const ans=q.a.trim().toLowerCase().startsWith("t")?"True":"False";
+      inp.innerHTML=["True","False"].map((o,j)=>`<button class="opt" data-k="${o}" data-key="${"TF"[j]}"><span class="key">${"TF"[j]}</span><span>${o}</span></button>`).join("");
+      choose("T or F",ans);
+    }else if(q.t=="fill_blank"){
+      inp.innerHTML=`<input type="text" id="fa" placeholder="Type your answer, then press Enter" autocomplete="off">`;const f=$("#fa");f.focus();
+      f.onkeydown=e=>{if(e.key!="Enter")return;if(done){$("#nx").click();return}const n=s=>s.toLowerCase().replace(/[^a-z0-9]/g,""),a=n(q.a),v=n(f.value);finish(v.length>0&&(v==a||(v.length>3&&a.includes(v))))};
+    }else{
+      inp.innerHTML=`<button class="btn ink" id="rvl">Show the model answer</button>`;
+      $("#rvl").onclick=()=>{if(done)return;$("#rvl").remove();
+        fb.innerHTML=`<div class="explain"><b>Model answer</b>\n${fmt(q.a)}\n\n${fmt(q.e)}</div><div class="qnav" style="justify-content:flex-start"><span class="muted">How did you do?</span><button class="btn bad sm" id="m1">Missed it</button><button class="btn acc sm" id="m2">Got it</button></div>`;renderMath(fb);
+        const mark=ok=>{if(done)return;done=true;if(ok){score++;right.push(q.q)}else wrong.push(q.q);$("#m1").parentElement.remove()};$("#m1").onclick=()=>mark(false);$("#m2").onclick=()=>mark(true)};
+    }
+    renderMath($("#qt"));renderMath(inp);
+    $("#nx").onclick=()=>{i++;draw()};
+  };
+  draw();
+}
+
+/* ---------- one delegated handler for page actions ---------- */
+const main=$("#main");
+main.addEventListener("click",async e=>{
+  const t=e.target, q=s=>t.closest(s);
+  let el;
+  if(el=q("[data-ch]")){openChapter(el.dataset.ch);return}
+  if(el=q("[data-reroll]")){const c=S.classes.classes.find(x=>x.id==el.dataset.reroll);if(!c)return;rerollShape(c);await saveClasses();
+    const th=$(`.tab[data-ch="${CSS.escape(c.id)}"] .tt`);if(th){th.dataset.shape=c.shape;th.style.backgroundImage=`url(/assets/${c.shape}.webp)`;th.classList.remove("missing")}
+    if(cur.view=="")openChapter(c.id);else route(true);return}
+  if(el=q("[data-del]")){e.stopPropagation();if(confirm("Delete this study guide? The original PDF is not touched.")){await api("/api/delete/"+enc(el.dataset.del),{method:"POST"});route(true)}return}
+  if(el=q("[data-range]")){range=+el.dataset.range;ls.set("range",range);route(true);return}
+  if(el=q("[data-tbl]")){const c=document.getElementById(el.dataset.tbl);c.classList.toggle("show-table");el.textContent=c.classList.contains("show-table")?"Chart":"Table";return}
+  if(el=q("[data-go]")){e.stopPropagation();location.hash=el.dataset.go;return}
+  if(q("[data-pick]")){$("#fi").click();return}
+  if(el=q("[data-jump]")){const s=document.getElementById(el.dataset.jump);s&&s.scrollIntoView({behavior:"smooth"});return}
+  if(q("[data-goal]")){const v=parseInt(prompt("Cards per day?",S.settings.goal),10);
+    if(v>=1&&v<=500){try{await api("/api/settings",{method:"POST",body:JSON.stringify({goal:v})});route(true)}catch(err){note(err.message,true)}}return}
+  if(el=q("[data-exam]")){const c=S.classes.classes.find(x=>x.id==el.dataset.exam);if(!c)return;const v=(prompt("Exam date (YYYY-MM-DD)?",c.exam||"")||"").trim();
+    if(/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(new Date(v+"T00:00:00"))){c.exam=v;await saveClasses();route(true)}else if(v)note("Use the format 2026-12-15",true);return}
+  if(el=q("[data-noexam]")){const c=S.classes.classes.find(x=>x.id==el.dataset.noexam);delete c.exam;await saveClasses();route(true);return}
+  if(el=q("[data-out]")){e.stopPropagation();delete S.classes.assign[el.dataset.out];await saveClasses();route(true);return}
+  if(q("[data-newclass]")){const n=(prompt("Chapter name (for example the course name)?")||"").trim();if(n){const id="c"+Date.now();S.classes.classes.push({id,name:n});await saveClasses();ls.set("ch",id);route(true)}return}
+  if(el=q("[data-ren]")){const c=S.classes.classes.find(x=>x.id==el.dataset.ren),n=(prompt("New name?",c.name)||"").trim();if(n){c.name=n;await saveClasses();route(true)}return}
+  if(el=q("[data-rmclass]")){if(confirm("Delete this chapter? Its study guides are kept.")){const id=el.dataset.rmclass;S.classes.classes=S.classes.classes.filter(x=>x.id!=id);for(const k in S.classes.assign)if(S.classes.assign[k]==id)delete S.classes.assign[k];await saveClasses();location.hash="#/"}return}
+  if(el=q("[data-open]")){if(!q("button,select,a"))location.hash="#/deck/"+enc(el.dataset.open);return}
+});
+main.addEventListener("change",async e=>{
+  const s=e.target;
+  if(s.dataset.add!==undefined&&s.value){S.classes.assign[s.value]=s.dataset.add;await saveClasses();route(true)}
+  if(s.dataset.setclass!==undefined){if(s.value)S.classes.assign[s.dataset.setclass]=s.value;else delete S.classes.assign[s.dataset.setclass];await saveClasses();route(true)}
+});
+main.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.matches(".row"))e.target.click()});
+
+route();jobTick();
+</script>
