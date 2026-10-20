@@ -98,6 +98,10 @@ Dropping a PDF into the app gives a quick, short guide for **one** PDF (about 15
 3. Open the **STUDY folder** (app: pick the folder; terminal: `cd STUDY` then `codex`).
 4. Ask in plain words. Codex reads `AGENTS.md` and finds the skills in `.agents/skills/` by itself. To call one directly, type `$course-guide` or `$study-app`, or pick it from `/skills`.
 
+> **Always open the agent in the STUDY folder itself.** The skills (`.claude/skills/`, `.agents/skills/`) and instructions (`CLAUDE.md`, `AGENTS.md`) belong to this project, so the agent only sees them when it is started here. Opened in another folder, it knows nothing about the app. Your course files can be anywhere; just give their path in the prompt.
+>
+> If you once installed an older `study-app` skill in your user folder (`%USERPROFILE%\.claude\skills\study-app` or `%USERPROFILE%\.agents\skills\study-app`), delete it, so the agent does not load an outdated copy instead of the project's.
+
 ### What to ask (same for both)
 
 > Make a study guide for my Networking course from the files in `C:\Uni\Networking`, put it in the Networking chapter, the exam is on 15 December.
@@ -133,6 +137,20 @@ Skill sources: OpenAI's curated skills at [github.com/openai/skills](https://git
 | `SKILL_ANYTHING_MODEL` | `openai/gpt-oss-120b` | A model your endpoint offers. |
 
 Groq's free tier has per-minute limits. If a very large PDF fails, split it into chapters.
+
+### Using a different key or model
+
+Yes, any provider with an OpenAI-compatible API works. Change the three lines in `.env` (open it with Notepad), save, and that's it: the app reads `.env` on every request, so no restart is needed.
+
+| Provider | `SKILL_ANYTHING_API_BASE` | `SKILL_ANYTHING_MODEL` (examples) | Key |
+|---|---|---|---|
+| Groq (default, free tier) | `https://api.groq.com/openai/v1` | `openai/gpt-oss-120b` | [console.groq.com/keys](https://console.groq.com/keys) |
+| OpenAI (paid per use) | `https://api.openai.com/v1` | `gpt-4o-mini`, `gpt-4.1-mini` | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| OpenRouter (many models) | `https://openrouter.ai/api/v1` | an id from [openrouter.ai/models](https://openrouter.ai/models) | [openrouter.ai/keys](https://openrouter.ai/keys) |
+
+- A ChatGPT Plus subscription is **not** an API key: OpenAI API usage is billed separately on platform.openai.com.
+- The model must support **JSON mode** (`response_format: json_object`) and a custom `temperature`. Most chat models do; some reasoning-only models (for example OpenAI's o-series) reject the temperature setting and will show an error. Pick a regular chat model.
+- Bigger models write better quick guides but cost more and are slower. *See in guide* answers already cached in `locate_cache.json` stay as they are; delete that file to recompute them with the new model.
 
 ---
 
