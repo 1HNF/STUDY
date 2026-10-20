@@ -304,7 +304,7 @@ article mark.w{background:none;color:inherit;font-weight:700;box-shadow:inset 0 
 ::view-transition-new(root){animation:vt-in .32s var(--out) both}
 @keyframes vt-out{to{opacity:0}}@keyframes vt-in{from{opacity:0}}
 
-@media (max-width:1180px){.spread{grid-template-columns:minmax(0,1fr) minmax(280px,420px)}.marg{grid-column:1/-1;display:flex;gap:44px;flex-wrap:wrap;padding-top:0}.charts{grid-template-columns:1fr}.reader{grid-template-columns:1fr}.toc{display:none}}
+@media (max-width:1180px){.spread{grid-template-columns:minmax(0,1fr) minmax(280px,420px)}.marg{grid-column:1/-1;display:flex;gap:44px;flex-wrap:wrap;padding-top:0}.charts{grid-template-columns:1fr}.reader{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
 @media (max-width:820px){
   .mast-h{gap:12px;padding:12px 16px}.mast-h nav{display:none}.sx{width:auto;flex:1}.sx:focus-within{width:auto}.sx kbd,.newg span{display:none}.mast-h .right{flex:1}
   main{padding:8px 16px 120px}
@@ -314,6 +314,22 @@ article mark.w{background:none;color:inherit;font-weight:700;box-shadow:inset 0 
   #mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--paper);box-shadow:0 -1px 0 var(--paper3);padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:4px}
   #mtabs a{flex:1;text-align:center;padding:10px 2px;border-radius:999px;color:var(--mu);font-weight:600;font-size:13.5px}#mtabs a.on{background:var(--paper2);color:var(--ink)}
   #jobbox{left:12px;right:12px;width:auto;bottom:76px}
+  /* phone: the card, question or text comes first; headings step down to a hand-held scale */
+  .spread h1,.opener h1,.empty h1,h1.l,h1.xl{font-size:clamp(38px,11.5vw,54px)!important;line-height:.95;margin:10px 0 14px}
+  .art .tt{--sz:220px!important}.opener{gap:12px}.lede{font-size:18px}.go{margin-top:24px}
+  .crumb{margin:2px 0 6px}
+  .dhead{gap:12px}.dhead h1{font-size:30px;line-height:1.08;max-width:none}
+  .dhead>div{width:100%;flex-wrap:nowrap!important}.dhead select{flex:1;min-width:0;padding:9px 14px}.dhead .btn{flex:none;padding:9px 14px;font-size:14px}
+  .utabs{margin-top:18px;gap:24px}.stage{margin-top:22px}
+  .btn kbd{display:none}
+  .ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.ctl .btn.lg{padding:15px 12px;justify-content:center;text-align:center}.ctl #sh,.ctl #sg{grid-column:1/-1}
+  .face{min-height:min(360px,52vh);padding:18px 20px}.face.front .body{font-size:25px}.face.back .body{font-size:18.5px}
+  .q{font-size:23px;margin-bottom:20px}.opt{padding:14px;gap:12px;font-size:16px}.opt:hover:not([disabled]){transform:none}
+  article{font-size:17px;line-height:1.7}article section+section{margin-top:48px}
+  article h2{font-size:34px;margin-bottom:16px}article h3{font-size:23px;margin-top:34px}article h4{font-size:19.5px;margin-top:28px}article h5{font-size:17px}
+  article .scroll,.mathblock{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+  article .scroll table{width:max-content;min-width:100%;font-size:14.5px}article .scroll th,article .scroll td{max-width:230px;padding:9px 12px}
+  article pre{font-size:13px;padding:14px 16px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
@@ -522,7 +538,9 @@ async function route(keepScroll){
   initTT(m);
   if(!keepScroll)scrollTo(0,0);
 }
-addEventListener("hashchange",()=>{document.startViewTransition&&!still.matches?document.startViewTransition(()=>route()):route()});
+addEventListener("hashchange",()=>{if(!document.startViewTransition||still.matches)return route();
+  // a transition aborted before its callback (e.g. the phone rotated mid-transition) would leave the old screen up
+  let ran=false;const t=document.startViewTransition(()=>{ran=true;return route()});t.ready.catch(()=>{});t.finished.catch(()=>{}).then(()=>{if(!ran)route()})});
 
 /* ---------- stats + charts (plain SVG) ---------- */
 const tipEl=document.createElement("div");tipEl.id="tip";document.body.append(tipEl);
