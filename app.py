@@ -614,7 +614,8 @@ def main():
     except OSError:  # already running: just open another window onto it
         open_window()
         return
-    threading.Thread(target=watchdog, daemon=True).start()
+    if not LAN:  # phone mode runs until its window is closed; a phone in a pocket stops pinging
+        threading.Thread(target=watchdog, daemon=True).start()
     if LAN:
         print(f"\nPhone mode. On a phone on the same Wi-Fi, open:\n\n    http://{LAN_IP}:{PORT}/?k={LAN_KEY}\n\n"
               "Keep this link private. Close this window to stop.\n", flush=True)
