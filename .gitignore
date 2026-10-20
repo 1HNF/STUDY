@@ -10,6 +10,7 @@ venv/
 
 # Secrets: each person keeps their own key in .env (see .env.example)
 .env
+.phone_key
 
 # Personal study data: never commit (your guides, PDFs, progress and caches)
 output/

@@ -1,16 +1,21 @@
 """Study app: a local window around Skill-Anything. Drop a PDF, get flashcards + quiz, keep a library.
 
-Run via Study.cmd. Standard library + PyYAML only (already installed). Listens on 127.0.0.1 only.
+Run via StudyApp.cmd. Standard library + PyYAML only (already installed). Listens on 127.0.0.1 only,
+unless started with --lan (StudyPhone.cmd): then phones on the same Wi-Fi can open it with a secret link.
 """
+import ipaddress
 import json
 import os
 import re
+import secrets
 import shutil
+import socket
 import subprocess
 import sys
 import threading
 import time
 import webbrowser
+from http.cookies import Morsel, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote
@@ -20,7 +25,9 @@ from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parent
 OUT, UP, PROG = ROOT / "output", ROOT / "uploads", ROOT / "progress.json"
-PORT = 8765
+LAN = "--lan" in sys.argv
+PORT = 8766 if LAN else 8765  # phone mode gets its own port so it never collides with an open desktop window
+LAN_IP, LAN_KEY = "", ""  # set in main() for --lan
 MAX_UPLOAD = 200 * 1024 * 1024
 IDLE_EXIT = 1800  # seconds without a browser ping before the server quits (study sessions can sit idle)
 
@@ -378,12 +385,23 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def host_ok(self):
-        return self.headers.get("Host", "").split(":")[0] in ("127.0.0.1", "localhost")
+        host, client = self.headers.get("Host", "").split(":")[0], self.client_address[0]
+        if host in ("127.0.0.1", "localhost") and client == "127.0.0.1":
+            return True
+        # LAN: only private-network clients that carry the secret key (cookie set by the /?k= link)
+        return (LAN and host == LAN_IP and ipaddress.ip_address(client).is_private
+                and secrets.compare_digest(SimpleCookie(self.headers.get("Cookie", "")).get("k", Morsel()).value or "", LAN_KEY))
 
     def do_GET(self):
+        path = self.path.split("?")[0]
+        if LAN and path == "/" and secrets.compare_digest(parse_qs(self.path.partition("?")[2]).get("k", [""])[0], LAN_KEY):
+            self.send_response(302)  # trade the link's key for a cookie, then drop it from the address bar
+            self.send_header("Set-Cookie", f"k={LAN_KEY}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict")
+            self.send_header("Location", "/")
+            self.end_headers()
+            return
         if not self.host_ok():
             return self.send(403, {"error": "bad host"})
-        path = self.path.split("?")[0]
         if path == "/":
             return self.send(200, UI.read_bytes(), "text/html")
         if path.startswith("/assets/"):
@@ -569,13 +587,28 @@ def watchdog():
             os._exit(0)
 
 
+def lan_ip():
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect(("8.8.8.8", 80))  # picks the Wi-Fi interface; UDP connect sends nothing
+        return s.getsockname()[0]
+
+
 def main():
+    global LAN_IP, LAN_KEY
+    if LAN:
+        LAN_IP, LAN_KEY = lan_ip(), (ROOT / ".phone_key").read_text().strip() if (ROOT / ".phone_key").exists() else ""
+        if not LAN_KEY:  # kept between runs so a phone that opened the link once stays signed in
+            LAN_KEY = secrets.token_urlsafe(16)
+            (ROOT / ".phone_key").write_text(LAN_KEY)
     try:
-        server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+        server = ThreadingHTTPServer(("0.0.0.0" if LAN else "127.0.0.1", PORT), Handler)
     except OSError:  # already running: just open another window onto it
         open_window()
         return
     threading.Thread(target=watchdog, daemon=True).start()
+    if LAN:
+        print(f"\nPhone mode. On a phone on the same Wi-Fi, open:\n\n    http://{LAN_IP}:{PORT}/?k={LAN_KEY}\n\n"
+              "Keep this link private. Close this window to stop.\n", flush=True)
     open_window()
     server.serve_forever()
 
